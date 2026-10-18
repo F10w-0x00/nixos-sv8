@@ -13,6 +13,10 @@ let
   # 可改：96 (1.0x), 120 (1.25x), 144 (1.5x), 168 (1.75x)
   targetDpi = 144;
 
+  # 桌面壁纸（存放于仓库 wallpapers/ 目录下，随系统构建打包入系统，不依赖外部路径）
+  # 可改：直接替换 wallpapers/wallpaper.png，或在此处指定其它图片路径
+  wallpaperPath = ../wallpapers/wallpaper.png;
+
   # 定制编译的 Suckless 核心工具链
   customDwm = pkgs.dwm.override {
     conf = ../pkgs/dwm/config.h;
@@ -65,12 +69,8 @@ in
       # 设置鼠标默认指针形状（left_ptr）
       ${pkgs.xsetroot}/bin/xsetroot -cursor_name left_ptr &
 
-      # 设定桌面壁纸（使用 ~/Pictures 下唯一的 Kurisu.png）
-      if [ -f /home/flynn/Pictures/Kurisu.png ]; then
-        ${pkgs.feh}/bin/feh --bg-fill /home/flynn/Pictures/Kurisu.png &
-      else
-        ${pkgs.xsetroot}/bin/xsetroot -solid "#1e1e2e" &
-      fi
+      # 设定桌面壁纸（由本仓库 wallpapers/ 打包进系统，完全自包含）
+      ${pkgs.feh}/bin/feh --bg-fill ${wallpaperPath} &
 
       # 启动轻量合成器 picom，实现终端 80% (0.8) 半透明与硬件加速防撕裂
       ${pkgs.picom}/bin/picom -b --backend glx --vsync \
