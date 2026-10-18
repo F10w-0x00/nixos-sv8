@@ -7,11 +7,11 @@
 - [x] 向我提问（附默认值）：用户名 / 主机名（默认沿用）、是否用 flakes（默认是）、nixpkgs 分支（默认沿用当前稳定版）、是否用 home-manager（默认不用，先系统级）、物理键盘 JIS/US、时区（先用 `timedatectl` 查当前值）、输入法（默认中文拼音，日语可选）、续航 vs 性能偏好（默认续航优先）、是否需要休眠（默认不要）、登录方式（默认 tty 自动登录 + startx，备选 lightdm / ly）
 
 ## 阶段 1 — 仓库与基线
-- [ ] 初始化 git 仓库、flake、模块骨架（模块可先为空，但要有文件头和分节标题）；新增文件记得 `git add`
-- [ ] 启用 flakes 与 nix-command；`nix.settings` 合理；先不开自动 GC，清理策略写进注释
-- [ ] 引导：保持当前方式；设置保留代数上限，先看 `df -h /boot` 的空间
-- [ ] 把现有硬件配置和现有行为**等价**迁入（本步不加新功能）。流程：静态检查 → 我执行 `test` → 我确认后执行 `switch` → 我重启一次确认能进系统 → `git tag baseline`
-- [ ] 基础项：时区、locale（`en_US.UTF-8` + `zh_CN.UTF-8`）、用户与 sudo、NetworkManager、`fstrim`、`zramSwap`、`enableRedistributableFirmware`、Intel 微码、`fwupd`（只读检查，不自动刷）
+- [x] 初始化 git 仓库、flake、模块骨架（模块可先为空，但要有文件头和分节标题）；新增文件记得 `git add`
+- [x] 启用 flakes 与 nix-command；`nix.settings` 合理；先不开自动 GC，清理策略写进注释
+- [x] 引导：保持当前方式；设置保留代数上限，先看 `df -h /boot` 的空间
+- [x] 把现有硬件配置和现有行为**等价**迁入（本步不加新功能）。流程：静态检查 → 我执行 `test` → 我确认后执行 `switch` → 我重启一次确认能进系统 → `git tag baseline`
+- [x] 基础项：时区、locale（`en_US.UTF-8` + `zh_CN.UTF-8`）、用户与 sudo、NetworkManager、`fstrim`、`zramSwap`、`enableRedistributableFirmware`、Intel 微码、`fwupd`（只读检查，不自动刷）
 
 ## 阶段 2 — 图形与 DWM（X11）
 - [ ] 图形栈：`hardware.graphics`（核实选项名）、`intel-media-driver`（VAAPI）、X 驱动用 modesetting、不装 xf86-video-intel。验证：`vainfo`、`glxinfo -B`、`xrandr --verbose`
