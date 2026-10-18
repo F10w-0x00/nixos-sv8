@@ -66,7 +66,8 @@ static const char *volmutecmd[]  = { "wpctl", "set-mute", "@DEFAULT_AUDIO_SINK@"
 static const char *micmutecmd[]  = { "wpctl", "set-mute", "@DEFAULT_AUDIO_SOURCE@", "toggle", NULL };
 static const char *brupcmd[]     = { "brightnessctl", "set", "+5%", NULL };
 static const char *brdowncmd[]   = { "brightnessctl", "set", "5%-", NULL };
-static const char *screenshotcmd[] = { "sh", "-c", "maim -s | xclip -selection clipboard -t image/png", NULL };
+static const char *screenshotcmd[]     = { "sh", "-c", "file=\"$HOME/Pictures/Screenshot_$(date +%Y%m%d_%H%M%S).png\"; if maim -s \"$file\"; then xclip -selection clipboard -t image/png \"$file\"; notify-send -t 3000 \"截图成功\" \"已复制到剪贴板并保存至 Pictures\"; fi", NULL };
+static const char *fullscreenshotcmd[] = { "sh", "-c", "file=\"$HOME/Pictures/Screenshot_$(date +%Y%m%d_%H%M%S).png\"; maim \"$file\" && xclip -selection clipboard -t image/png \"$file\" && notify-send -t 3000 \"全屏截图成功\" \"已复制到剪贴板并保存至 Pictures\"", NULL };
 
 static const Key keys[] = {
 	/* modifier                     key                       function        argument */
@@ -80,6 +81,8 @@ static const Key keys[] = {
 	{ 0,                            XF86XK_MonBrightnessUp,   spawn,          {.v = brupcmd } },
 	{ 0,                            XF86XK_MonBrightnessDown, spawn,          {.v = brdowncmd } },
 	{ 0,                            XK_Print,                 spawn,          {.v = screenshotcmd } },
+	{ MODKEY|ShiftMask,             XK_s,                     spawn,          {.v = screenshotcmd } },
+	{ MODKEY,                       XK_Print,                 spawn,          {.v = fullscreenshotcmd } },
 	{ MODKEY,                       XK_b,                     togglebar,      {0} },
 	{ MODKEY,                       XK_j,                     focusstack,     {.i = +1 } },
 	{ MODKEY,                       XK_k,                     focusstack,     {.i = -1 } },
