@@ -116,6 +116,6 @@ nix flake check ~/nixos-config --no-build
 1. **CPU**：Intel Core i7-8665U (Whiskey Lake, 4C/8T)
 2. **内存**：16GB LPDDR3 (板载)，已配置 ZRAM 50% 动态压缩交换空间防 OOM。
 3. **硬盘**：256GB SATA SSD (`sda`)，已启用系统级 `fstrim.weekly`。
-4. **键盘**：机身搭载日文 JIS 物理键盘，已在 `modules/input.nix` 中设为 `jp106`。
+4. **键盘**：采用标准美式 US 键盘布局（`layout = "us"`），完全移除 Fcitx5，保留全套 CJK 字体用于清晰阅读。
 5. **睡眠**：固件支持 S3 `deep` 睡眠与 `s2idle`。
-6. **触摸板**：搭载松下经典圆形触摸板，当前基线使用 libinput，后续阶段将在 X11 下通过 synaptics 驱动激活圆形圆周滚动。
+6. **触摸板**：搭载松下经典圆形触摸板，已通过 `xf86-input-synaptics` 驱动原生激活经典圆盘边缘旋转滚动（くるくるスクロール，步进设置为 `0.2`）。
