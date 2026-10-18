@@ -92,6 +92,8 @@ in
     gdb
     gnumake
     cmake
+    cargo
+    rustc
     alacritty
     neovim
     vscode

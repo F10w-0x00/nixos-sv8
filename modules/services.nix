@@ -31,6 +31,7 @@
 
   # ── 4. 打印与日常应用 ────────────────────────
   services.printing.enable = true; # CUPS 打印服务
+  services.flatpak.enable = true; # Flatpak 跨发行版软件包支持
 
   programs.firefox.enable = true; # 常用网页浏览器
 
@@ -50,5 +51,8 @@
 
   environment.systemPackages = with pkgs; [
     piliplus # Bilibili 第三方客户端
+    newsflash # 现代化 RSS 阅读器
+    mpv # 轻量级多媒体播放器
+    spotify # 音乐流媒体客户端
   ];
 }
