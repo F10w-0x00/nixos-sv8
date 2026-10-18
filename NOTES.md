@@ -110,6 +110,32 @@
   - 壁纸：自动应用 `/home/flynn/Pictures/Kurisu.png`。
   - 半透明：启用 `picom` 硬件加速合成器，设置 `st` 不透明度为 0.8。
   - 自动锁屏：`xss-lock` 与 `slock` 联动，实现合盖与休眠锁屏。
-  - 输入法：`fcitx5 -d` 后台守护启动。
+  - 字体与输入法：按用户最新要求完全移除 Fcitx5 守护进程，保留全套 CJK 字体用于终端和网页正常阅读。
+
+## 阶段 3 — 输入设备与圆形滚动 (2026-10-18)
+
+### 1. 键盘布局 (US QWERTY)
+- 用户决策：统一采用标准美式键盘映射（`layout = "us"`），无需 JIS 假名键等特殊按键映射。
+- 配置位置：`modules/input.nix` (`services.xserver.xkb.layout = "us"`, `console.keyMap = "us"`).
+
+### 2. 松下圆盘触摸板硬件探测
+- **控制器**: `Synaptics TM3136-020` (I2C ID `06cb:cc40`, `/dev/input/event11`)
+- **物理外观**: 经典 44mm 直径圆形触摸板（内置正方形传感器）
+- **实测硬件坐标范围**:
+  - `ABS_X`: min = 0, max = 880, resolution = 20
+  - `ABS_Y`: min = 0, max = 880, resolution = 20
+  - 几何中心点: `(440, 440)`
+
+### 3. Synaptics 驱动与圆形滚动配置
+- **解决冲突**: 关闭 `services.libinput.enable = false`（Xorg 不允许同时启用 libinput 和 synaptics 抢占触摸板）。
+- **驱动配置**:
+  - `services.xserver.synaptics.enable = true`
+  - `Option "CircularPad" "on"`: 告知驱动物理触摸板为圆形，按椭圆/圆形边界处理坐标
+  - `Option "CircularScrolling" "on"`: 开启沿边缘圆周画圈滚动（くるくるスクロール）
+  - `Option "CircScrollTrigger" "0"`: 任意边缘位置起笔均可触发旋转滚动
+  - `Option "CircScrollDelta" "0.1"`: 滚动步进灵敏度
+  - `fingersMap = [ 1 3 2 ]` / `buttonsMap = [ 1 3 2 ]`: 单指左键、双指右键、三指中键
+  - `twoFingerScroll = true`: 保留传统双指平移滚动兼容
+  - `environment.systemPackages`: 引入 `xf86-input-synaptics` (提供 `synclient`) 与 `xinput` 供实时微调
 
 
