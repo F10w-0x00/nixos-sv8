@@ -60,9 +60,9 @@
 3. **Flakes**：启用（统一使用 flake 构建）
 4. **nixpkgs 分支**：沿用当前通道版本 `nixos-unstable` / `nixos-26.05`
 5. **home-manager**：暂不引入，先在系统级声明式管理
-6. **物理键盘**：**JIS 日文键盘**（带「無変換」「変換」「カタカナひらがな」等按键）
+6. **键盘布局**：**标准美式 US 键盘布局**（用户 2026-10-18 最新变更：不需要 JIS 映射，统一使用标准 US 布局）
 7. **时区**：`Asia/Shanghai`（沿用）
-8. **输入法**：中文拼音（Fcitx5），不加装日语 Mozc
+8. **输入法与字体**：**无需输入法**（按用户最新要求完全移除 Fcitx5，本机不需要打中文），**全量保留 CJK 字体**（Noto CJK Sans/Serif、文泉驿）以满足中日英文字正常阅读显示
 9. **电源偏好**：续航优先
 10. **休眠 (Hibernate)**：不需要（仅使用 S3 deep 睡眠）
 11. **登录方式**：`tty 自动登录 + startx`（极简、无 Display Manager 守护开销，任务书推荐）
@@ -91,4 +91,25 @@
   - `zramctl` -> `/dev/zram0` (7.7G, zstd, SWAP active)
   - `lsmod | grep panasonic` -> `panasonic_laptop` 驱动正常加载
 - `sudo nixos-rebuild switch --flake ~/nixos-config#sv8`：成功固化为 Generation 18（`/nix/store/czbc7av1gn7jcg1ijjdxli6f62ng37ar-nixos-system-sv8-26.05.20261015.26f4107`），成为 UEFI 默认启动项。
+
+## 阶段 2 — 图形与 DWM（X11）(2026-10-18)
+
+### 1. 图形栈与硬件加速
+- 核显驱动：Intel UHD 620 (`i915` + modesetting)
+- 硬件编解码 (VAAPI)：`intel-media-driver` (iHD 26.1.6) 已就绪，vainfo 验证通过。
+- OpenGL：Mesa 26.1.8 (Core Profile 4.6) 硬件加速正常。
+- 缩放调整：根据 12.1 寸 1920×1200 物理屏幕（~187 DPI），全局 DPI 设定为 144（1.5x 缩放）；DWM 顶栏与 dmenu 设定为 11pt，界面紧凑清晰。
+
+### 2. DWM 与 Suckless 工具链定制
+- 源码定制与补丁纳入 Git 管理：
+  - `pkgs/dwm/config.h`：使用 `Mod4` (Super/Win) 键；绑定音量、亮度、锁屏及截图快捷键；顶栏字号 11。
+  - `pkgs/st/config.h` & `pkgs/st/patches/`：打入官方三项回滚补丁（`st-scrollback` + `st-scrollback-mouse` + `altscreen`），支持鼠标滚轮平滑翻页与 Shift+PageUp/Down，字号 pixelsize=20。
+  - `pkgs/dmenu/config.h`：Catppuccin 深色配色，字号 11。
+  - `pkgs/slstatus/config.h`：纯净显示 `[BAT %s%%]`（去除多余状态符号）、CPU、RAM、Wi-Fi、时钟。
+- 会话组件：
+  - 壁纸：自动应用 `/home/flynn/Pictures/Kurisu.png`。
+  - 半透明：启用 `picom` 硬件加速合成器，设置 `st` 不透明度为 0.8。
+  - 自动锁屏：`xss-lock` 与 `slock` 联动，实现合盖与休眠锁屏。
+  - 输入法：`fcitx5 -d` 后台守护启动。
+
 

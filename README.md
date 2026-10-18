@@ -40,7 +40,7 @@
 | 系统预装基础 CLI 工具 | `modules/base.nix` | §5. 基础系统工具 |
 | ZRAM 内存交换比例 | `modules/hardware-sv8.nix` | §3. 存储与内存优化 (`memoryPercent`) |
 | 视频硬件编解码驱动 | `modules/graphics.nix` | §1. 核显驱动与视频加速 |
-| 键盘物理布局 (JIS/US) | `modules/input.nix` | §1. 键盘布局 (`xkb.layout`) |
+| 键盘映射布局 (默认 US) | `modules/input.nix` | §1. 键盘布局 (`xkb.layout`) |
 | 触摸板参数与滚动行为 | `modules/input.nix` | §2. 触摸板基础设置 |
 | 睡眠模式 (deep / s2idle) | `modules/power.nix` | §1. 睡眠模式基线 |
 | 省电策略 (TLP) | `modules/power.nix` | §2. 电源管理骨架 |
@@ -50,8 +50,7 @@
 | 终端模拟器 (st) 外观与字体 | `pkgs/st/config.h` | 字体与像素大小 |
 | 应用菜单 (dmenu) 外观与字体 | `pkgs/dmenu/config.h` | 菜单颜色与字体 |
 | 状态栏 (slstatus) 监控项 | `pkgs/slstatus/config.h` | 状态栏显示模块 |
-| 字体安装与回退顺序 | `modules/fonts-ime.nix` | §1. 字体包与 Fontconfig 默认值 |
-| 输入法引擎与词库插件 | `modules/fonts-ime.nix` | §2. Fcitx5 输入法 |
+| 字体安装与 CJK 回退优先级 | `modules/fonts-ime.nix` | §1. 字体包与 Fontconfig 默认值（保留 CJK 阅读） |
 | 蓝牙开关与默认行为 | `modules/services.nix` | §1. 网络与蓝牙 |
 | 音频配置 (PipeWire) | `modules/services.nix` | §2. 音频子系统 |
 
