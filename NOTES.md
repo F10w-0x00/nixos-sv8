@@ -138,4 +138,10 @@
   - `twoFingerScroll = true`: 保留传统双指平移滚动兼容
   - `environment.systemPackages`: 引入 `xf86-input-synaptics` (提供 `synclient`) 与 `xinput` 供实时微调
 
-
+### 4. 固化与实测验证
+- 用户执行 `sudo nixos-rebuild switch --flake ~/nixos-config#sv8`，成功切换至 **Generation 19**。
+- `xinput list-props 12` 验证驱动属性：
+  - `Synaptics Circular Scrolling (352) = 1`
+  - `Synaptics Circular Pad (355) = 1`
+  - `Synaptics Circular Scrolling Distance (353) = 0.1`
+- 实机体验：圆盘画圈滚动平滑自然，轻触左键、双指右键灵敏有效。

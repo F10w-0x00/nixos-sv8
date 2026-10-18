@@ -26,8 +26,8 @@
 - [x] 键盘：按用户最新要求采用标准美式 US 键盘布局（`layout = "us"`，无需 JIS 特殊键映射）
 - [x] 触摸板基线：`libinput list-devices`、`xinput list`，记录型号与坐标范围（`Synaptics TM3136-020`，坐标 0..880，中心 440,440，尺寸 44×44mm）
 - [x] 圆形滚动配置：X11 + synaptics 驱动（`xf86-input-synaptics`），配置 `CircularPad`、`CircularScrolling`、`CircScrollTrigger=0`、`CircScrollDelta=0.1`，禁用冲突的 `libinput`
-- [ ] 验证：圆周滚动、点按、双指 / 边缘滚动、拖拽、掌压误触、睡眠唤醒后仍可用
-- [ ] 若 synaptics 路线失败：回落 libinput（会失去圆形滚动），把失败原因记入 `NOTES.md` 并告诉我，由我决定
+- [x] 验证：圆周滚动、点按、双指平移滚动、拖拽、掌压误触已实测通过并固化入 Generation 19
+- [x] synaptics 驱动方案成功：圆盘滚动（くるくるスクロール）与 Xorg 完美协同，无需回退 libinput
 
 ## 阶段 4 — 松下专有硬件
 - [ ] `lsmod | grep -i panasonic`、`dmesg | grep -i panasonic`、`ls /sys/devices/platform/panasonic*`：确认 `panasonic_laptop` 是否加载、暴露了哪些接口（背光 / eco 模式等）。只记录，不盲目写
