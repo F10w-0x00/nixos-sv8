@@ -44,11 +44,38 @@
 | 触摸板参数与滚动行为 | `modules/input.nix` | §2. 触摸板基础设置 |
 | 睡眠模式 (deep / s2idle) | `modules/power.nix` | §1. 睡眠模式基线 |
 | 省电策略 (TLP) | `modules/power.nix` | §2. 电源管理骨架 |
-| 桌面组件与快捷键 | `modules/desktop-dwm.nix` | 阶段 2 展开 |
+| 屏幕缩放比例 (DPI) | `modules/desktop-dwm.nix` | §1. 显示与 DPI 设置 (`targetDpi`) |
+| DWM 窗口管理器与启动项 | `modules/desktop-dwm.nix` | §2. TTY 自动登录与 §3. DWM 窗口管理器 |
+| DWM 快捷键与外观定制 | `pkgs/dwm/config.h` | 键盘按键与外观规则 |
+| 终端模拟器 (st) 外观与字体 | `pkgs/st/config.h` | 字体与像素大小 |
+| 应用菜单 (dmenu) 外观与字体 | `pkgs/dmenu/config.h` | 菜单颜色与字体 |
+| 状态栏 (slstatus) 监控项 | `pkgs/slstatus/config.h` | 状态栏显示模块 |
 | 字体安装与回退顺序 | `modules/fonts-ime.nix` | §1. 字体包与 Fontconfig 默认值 |
 | 输入法引擎与词库插件 | `modules/fonts-ime.nix` | §2. Fcitx5 输入法 |
 | 蓝牙开关与默认行为 | `modules/services.nix` | §1. 网络与蓝牙 |
 | 音频配置 (PipeWire) | `modules/services.nix` | §2. 音频子系统 |
+
+---
+
+## DWM 常用快捷键对照表
+
+| 快捷键 | 功能 | 说明 |
+| :--- | :--- | :--- |
+| `Super + Shift + Enter` | 打开终端 | 启动定制版 `st` 终端 |
+| `Super + p` | 打开应用启动器 | 唤起 `dmenu` 搜索并启动程序 |
+| `Super + Shift + c` | 关闭当前窗口 | 类似常规 Alt+F4 |
+| `Super + j / k` | 切换窗口焦点 | 在平铺窗口之间按序切换 |
+| `Super + h / l` | 调整主窗口分屏宽度 | 缩窄 / 放大左侧主区域比例 |
+| `Super + Enter` | 窗口提升至主分屏 | 将当前聚焦窗口切换为主窗口 |
+| `Super + t / f / m` | 切换平铺 / 浮动 / 单窗口全屏模式 | 窗口排版模式快速切换 |
+| `Super + Space` | 切换当前布局与上一布局 | 快速在平铺与浮动间切换 |
+| `Super + 1~9` | 切换工作区 (Tag) | 切换到指定虚拟桌面 |
+| `Super + Shift + 1~9` | 发送窗口至工作区 (Tag) | 将当前聚焦窗口移入指定桌面 |
+| `Super + Shift + l` | 手动锁屏 | 立即调用 `slock` 锁屏 |
+| `Print` | 区域截图 | 选区截图并自动拷入系统剪贴板 |
+| `Fn + F1 / F2` | 屏幕亮度减 / 增 | 联动 `brightnessctl` |
+| `Fn + F4 / F5 / F6` | 音量静音 / 减 / 增 | 联动 PipeWire (`wpctl`) |
+| `Super + Shift + q` | 安全退出 DWM | 返回 tty 控制台 |
 
 ---
 
