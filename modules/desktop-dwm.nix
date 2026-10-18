@@ -17,7 +17,7 @@ let
     conf = ../pkgs/dwm/config.h;
   };
   customSt = pkgs.st.override {
-    conf = ../pkgs/st/config.h;
+    conf = builtins.readFile ../pkgs/st/config.h;
   };
   customDmenu = pkgs.dmenu.override {
     conf = ../pkgs/dmenu/config.h;
@@ -54,10 +54,10 @@ in
     generateScript = true;
     extraCommands = ''
       # 合并 X 资源配置（统一设置全局 120 DPI）
-      echo "Xft.dpi: ${toString targetDpi}" | ${pkgs.xorg.xrdb}/bin/xrdb -merge -
+      echo "Xft.dpi: ${toString targetDpi}" | ${pkgs.xrdb}/bin/xrdb -merge -
 
       # 设置鼠标默认指针形状（left_ptr）并填充纯深色背景
-      ${pkgs.xorg.xsetroot}/bin/xsetroot -cursor_name left_ptr -solid "#1e1e2e" &
+      ${pkgs.xsetroot}/bin/xsetroot -cursor_name left_ptr -solid "#1e1e2e" &
 
       # 启动 Fcitx5 输入法守护进程
       ${pkgs.fcitx5}/bin/fcitx5 -d &
@@ -100,8 +100,8 @@ in
     libnotify # notify-send 命令行通知发送工具
     xss-lock # X 屏幕保护与休眠自动锁屏联动
     udiskie # 可移动磁盘自动挂载前端
-    xorg.xsetroot # X11 根窗口设置（鼠标指针、纯色背景）
-    xorg.xrdb # X 资源数据库管理
-    xorg.xev # X11 键盘按键事件测试工具（排查 Fn 键）
+    xsetroot # X11 根窗口设置（鼠标指针、纯色背景）
+    xrdb # X 资源数据库管理
+    xev # X11 键盘按键事件测试工具（排查 Fn 键）
   ];
 }
