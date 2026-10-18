@@ -71,8 +71,7 @@
 | `Super + 1~9` | 切换工作区 (Tag) | 切换到指定虚拟桌面 |
 | `Super + Shift + 1~9` | 发送窗口至工作区 (Tag) | 将当前聚焦窗口移入指定桌面 |
 | `Super + Shift + l` | 手动锁屏 | 立即调用 `slock` 锁屏 |
-| `Super + Shift + s` / `Print` | 区域截图 | 选区截图，自动拷入剪贴板并存入 `~/Pictures/`，带系统通知 |
-| `Super + Print` | 全屏截图 | 截取全屏，自动拷入剪贴板并存入 `~/Pictures/`，带系统通知 |
+| `Print` (Fn + Print) | 区域截图 | 选区截图并自动拷入系统剪贴板 |
 | `Fn + F1 / F2` | 屏幕亮度减 / 增 | 联动 `brightnessctl` |
 | `Fn + F4 / F5 / F6` | 音量静音 / 减 / 增 | 联动 PipeWire (`wpctl`) |
 | `Super + Shift + q` | 安全退出 DWM | 返回 tty 控制台 |
