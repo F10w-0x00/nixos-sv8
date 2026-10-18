@@ -44,6 +44,7 @@
 | 触摸板参数与滚动行为 | `modules/input.nix` | §2. 触摸板基础设置 |
 | 睡眠模式 (deep / s2idle) | `modules/power.nix` | §1. 睡眠模式基线 |
 | 省电策略 (TLP) | `modules/power.nix` | §2. 电源管理骨架 |
+| 桌面壁纸图片与路径 | `wallpapers/` 目录或 `modules/desktop-dwm.nix` | 顶部 let 常量 (`wallpaperPath`) |
 | 屏幕缩放比例 (DPI) | `modules/desktop-dwm.nix` | §1. 显示与 DPI 设置 (`targetDpi`) |
 | DWM 窗口管理器与启动项 | `modules/desktop-dwm.nix` | §2. TTY 自动登录与 §3. DWM 窗口管理器 |
 | DWM 快捷键与外观定制 | `pkgs/dwm/config.h` | 键盘按键与外观规则 |
