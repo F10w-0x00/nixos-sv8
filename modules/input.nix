@@ -1,6 +1,6 @@
 # modules/input.nix — 输入设备配置
 # 作用：美式标准键盘布局 (US)、松下圆盘触摸板 (Synaptics 驱动 + くるくるスクロール)
-# 依赖：pkgs.xf86-input-synaptics, pkgs.xorg.xinput
+# 依赖：pkgs.xf86-input-synaptics, pkgs.xinput
 # 目录：1. 键盘布局 (US)  2. 松下圆盘触摸板 (Synaptics 圆形滚动)
 { pkgs, ... }:
 
@@ -53,6 +53,6 @@ in
   # 提供 synclient 工具用于运行时动态微调触摸板参数
   environment.systemPackages = with pkgs; [
     xf86-input-synaptics # 提供 synclient
-    xorg.xinput # 提供 xinput 设备调试工具
+    xinput # 提供 xinput 设备调试工具 (消除弃用警告)
   ];
 }
