@@ -8,7 +8,7 @@ let
   # 触摸板参数调整区（Let's Note CF-SV8 圆形触摸板专用）
   # くるくるスクロール (Circular Scrolling)：沿圆盘边缘画圈实现上下滚动
   circScrollTrigger = "0"; # 0 = 任意边缘均可触发沿圆周旋转滚动
-  circScrollDelta = "0.1"; # 滚动步进灵敏度（弧度，数值越小越灵敏）
+  circScrollDelta = "0.25"; # 滚动步进灵敏度（弧度，默认 0.1 偏快，调大至 0.25 更沉稳适中）
 in
 {
   # ── 1. 键盘布局 (US) ─────────────────────────
