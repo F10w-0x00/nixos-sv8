@@ -66,3 +66,29 @@
 9. **电源偏好**：续航优先
 10. **休眠 (Hibernate)**：不需要（仅使用 S3 deep 睡眠）
 11. **登录方式**：`tty 自动登录 + startx`（极简、无 Display Manager 守护开销，任务书推荐）
+
+## 阶段 1 — 仓库与基线 (2026-10-18)
+
+### 1. 仓库结构与模块化拆分
+- 初始化 `~/nixos-config` Flake 结构：
+  - `flake.nix` & `flake.lock` (pinned to commit `26f4107e47e3ad0ffd0db220469ba83b6f6d96e8`)
+  - `hosts/sv8/default.nix` & `hosts/sv8/hardware-configuration.nix`
+  - `modules/base.nix`：Nix 配置、Flakes 支持、systemd-boot (保留上限 10 代)、时区 Locale、用户与系统维护工具
+  - `modules/hardware-sv8.nix`：CPU 微码、闭源固件、`panasonic_laptop` 内核模块、`zramSwap` (50% 内存 = 7.7G)、`fstrim`
+  - `modules/graphics.nix`：Intel UHD 620 核显、`intel-media-driver` (VAAPI)、modesetting 驱动
+  - `modules/input.nix`：JIS jp106 键盘映射、libinput 基础触控板配置
+  - `modules/power.nix`：电源骨架（预留阶段 5 实测）
+  - `modules/desktop-dwm.nix`：阶段 1 保持 Plasma 6 等价基线；阶段 2 迁移 DWM
+  - `modules/fonts-ime.nix`：Noto CJK、JetBrainsMono Nerd Font、Fcitx5 拼音输入法
+  - `modules/services.nix`：NetworkManager、Bluetooth (Intel 9560)、PipeWire 音频、CUPS、fwupd、Flatpak、LocalSend、Clash Verge
+
+### 2. 构建与切换验证
+- `nix flake check --no-build`：评估全部通过。
+- `sudo nixos-rebuild test --flake ~/nixos-config#sv8`：成功激活（Done，exit 0）。
+- 只读验证结果：
+  - `hostname` -> `sv8`
+  - `systemctl is-active bluetooth dev-zram0.swap NetworkManager` -> 全部 `active`
+  - `zramctl` -> `/dev/zram0` (7.7G, zstd, SWAP active)
+  - `lsmod | grep panasonic` -> `panasonic_laptop` 驱动正常加载
+- `sudo nixos-rebuild switch --flake ~/nixos-config#sv8`：成功固化为 Generation 18（`/nix/store/czbc7av1gn7jcg1ijjdxli6f62ng37ar-nixos-system-sv8-26.05.20261015.26f4107`），成为 UEFI 默认启动项。
+
