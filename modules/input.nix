@@ -1,24 +1,24 @@
 # modules/input.nix — 输入设备配置
-# 作用：JIS 物理键盘键位布局、触摸板基础驱动骨架
+# 作用：美式标准键盘布局 (US)、触摸板基础驱动骨架
 # 依赖：无
-# 目录：1. 键盘布局 (JIS)  2. 触摸板基础设置
+# 目录：1. 键盘布局 (US)  2. 触摸板基础设置
 { ... }:
 
 {
-  # ── 1. 键盘布局 (JIS) ────────────────────────
-  # [SV8] 适配松下机身自带的日文 JIS 物理键盘
-  # 可改：layout = "us"（若外接纯美式键盘使用）
+  # ── 1. 键盘布局 (US) ─────────────────────────
+  # 用户决定使用标准美式键盘映射（US QWERTY）
+  # 可改：options = "ctrl:nocaps" 交换 CapsLock 与 Ctrl
   services.xserver.xkb = {
-    layout = "jp";
-    model = "jp106";
-    options = ""; # [ALT] 可配置 "ctrl:nocaps" 交换 CapsLock 与 Ctrl
+    layout = "us";
+    variant = "";
+    options = "";
   };
 
-  # 控制台终端控制键盘映射
-  console.keyMap = "jp106";
+  # 控制台终端键盘映射
+  console.keyMap = "us";
 
   # ── 2. 触摸板基础设置 ────────────────────────
-  # [SV8] 阶段 1 保持 libinput 通用支持；阶段 3 将切换至 xf86-input-synaptics 以启用松下经典圆形滚动
+  # [SV8] 当前使用 libinput 通用驱动；阶段 3 将配置 synaptics 驱动以启用松下经典圆形滚动
   services.libinput = {
     enable = true;
     touchpad = {

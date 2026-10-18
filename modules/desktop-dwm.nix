@@ -78,9 +78,6 @@ in
         --opacity-rule "80:class_g = 'st'" \
         --opacity-rule "80:class_g = 'Alacritty'" &
 
-      # 启动 Fcitx5 输入法守护进程
-      ${pkgs.fcitx5}/bin/fcitx5 -d &
-
       # 启动桌面通知服务
       ${pkgs.dunst}/bin/dunst &
 
