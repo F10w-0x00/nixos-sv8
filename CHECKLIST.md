@@ -24,8 +24,8 @@
 
 ## 阶段 3 — 输入设备
 - [x] 键盘：按用户最新要求采用标准美式 US 键盘布局（`layout = "us"`，无需 JIS 特殊键映射）
-- [ ] 触摸板基线：`libinput list-devices`、`xinput list`，记录型号和坐标范围（`evtest` 或 `synclient -l`）
-- [ ] 圆形滚动：目标是 X11 + synaptics 驱动。先核实当前版本是否仍有 `services.xserver.synaptics` 模块，以及包名（`xf86-input-synaptics` 或 `xorg.xf86inputsynaptics`）；若无模块，用 InputClass 配置片段加载驱动。SV7 的参数（`CircularScrolling`、`CircularPad`、`CircScrollTrigger`、边缘坐标、`VertScrollDelta`、`CircScrollDelta`）只作起点，**边缘坐标必须用本机实测值**。确保 libinput 与 synaptics 不抢同一设备（用 `xinput list-props` 确认当前驱动）
+- [x] 触摸板基线：`libinput list-devices`、`xinput list`，记录型号与坐标范围（`Synaptics TM3136-020`，坐标 0..880，中心 440,440，尺寸 44×44mm）
+- [x] 圆形滚动配置：X11 + synaptics 驱动（`xf86-input-synaptics`），配置 `CircularPad`、`CircularScrolling`、`CircScrollTrigger=0`、`CircScrollDelta=0.1`，禁用冲突的 `libinput`
 - [ ] 验证：圆周滚动、点按、双指 / 边缘滚动、拖拽、掌压误触、睡眠唤醒后仍可用
 - [ ] 若 synaptics 路线失败：回落 libinput（会失去圆形滚动），把失败原因记入 `NOTES.md` 并告诉我，由我决定
 
