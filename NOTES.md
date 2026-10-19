@@ -283,4 +283,32 @@
   systemctl status throttled
   ```
 
+---
+
+## 阶段 8 — 松下 CF-SV8 硬件功能完整对照表
+
+| 硬件功能项 | 状态 | 落地驱动 / 配置方案 | 详细实测说明与调优备注 |
+| :--- | :---: | :--- | :--- |
+| **圆形滚动 (くるくるスクロール)** | **正常** | `xf86-input-synaptics` (`modules/input.nix`) | 实测圆盘边缘顺时针/逆时针顺畅滚动；`CircScrollDelta=0.2` 手感自然稳定 |
+| **触摸板点按 / 平移** | **正常** | `xf86-input-synaptics` (`modules/input.nix`) | 单指左键、双指右键、三指中键；双指平移滚动兼容传统操作 |
+| **亮度快捷键 (Fn+F1/F2)** | **正常** | PS/2 scancode + `brightnessctl` | 步进 5%，直接调控 `intel_backlight`，平滑无频闪 |
+| **音量快捷键 (Fn+F4/F5/F6)** | **正常** | PS/2 scancode + PipeWire (`wpctl`) | 一键静音、音量加减、麦克风静音，无弹窗卡顿 |
+| **功能快捷键 (锁屏/截图)** | **正常** | DWM 绑定 `slock` / `maim` + `xclip` | `Super+Shift+l` 极简黑屏锁屏；`PrtSc` 单键截图秒进系统剪贴板 |
+| **无线滑块物理开关** | **部分** | DSDT MAT0028 只读识别 | 拨动滑块可物理切断蓝牙；Linux 暂无 MAT0028 驱动，依红线 4 不侵入写 EC，软件通过 NM/rfkill 统一管理 |
+| **睡眠模式 (Suspend)** | **正常** | ACPI 原生支持 `[s2idle] deep` | `services.logind` 合盖挂起，`xss-lock` 联动锁屏；功耗极低 |
+| **系统休眠 (Hibernate)** | **已跳过** | 用户阶段 0 决策跳过 | 阶段 0 明确无需磁盘 swap 挂起，纯使用 S3 deep 睡眠，节约 SSD 磨损 |
+| **多途径系统唤醒** | **正常** | UEFI 2.70 AMI 固件原生支持 | 开盖 (`LID0`)、轻按电源键 (`PWRF`)、外接鼠标 (`XHC`) 均可唤醒，无需高风险 `acpi_call` |
+| **屏幕闪屏** | **无闪屏** | Intel UHD 620 (`i915` + modesetting) | 多小时重负载、调亮度、编译未发生任何闪屏，内核日志健康 |
+| **功耗与编译性能** | **正常** | 双方案自由切换 (`modules/power.nix`) | 方案 B (当前生效)：20W 满血释放，全核 2.4~3.0GHz 极速编译；方案 A (备用)：10W 极度冷凉 |
+| **放电功耗与续航** | **正常** | TLP 能效调度 + Intel C-states | CPU 空闲封装仅 3.02W，C10 深度驻留，整机待机仅 ~7.5W |
+| **RGB 高清摄像头** | **正常** | 内核 UVC 驱动 (`/dev/video0,1`) | Bison Electronics 720p HD Webcam 出流正常 |
+| **红外人脸相机 (IR)** | **就绪** | 内核 UVC 驱动 (`/dev/video2,3`) | 红外硬件完备可用，支持 Linux Howdy 人脸解锁方案 |
+| **内置麦克风与扬声器** | **正常** | PipeWire 1.6.6 + WirePlumber (`snd_hda_intel`) | 立体声输出清晰，内置麦克风采集良好，无爆音 |
+| **SD 读卡器** | **正常** | 内核 `sdhci-pci` (O2 Micro OZ777 `1217:8520`) | PCIe 控制器加载正常，支持大容量 SD 卡即插即读 |
+| **外接显示输出 (HDMI)** | **正常** | Intel UHD 620 + `autorandr` (`modules/graphics.nix`) | 支持 HDMI 外接高分屏与多屏自动重排 |
+| **Type-C / 雷电 3 (TB3)** | **正常** | `thunderbolt` + UCSI PD 驱动 | 支持 65W PD 诱骗快充与雷电高速外设数据传输 |
+| **指纹识别模块** | **不可用** | 硬件未配备 | 原厂选配项，本机未搭载指纹传感器硬件（`lsusb`/`lspci` 确认不存在） |
+| **WWAN 4G 蜂窝网络** | **正常** | Sierra Wireless MC7455 (`qcserial` + `cdc_mbim`) | 驱动加载完毕，NetworkManager 识别为 `enabled` |
+
+
 

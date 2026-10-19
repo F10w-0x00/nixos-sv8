@@ -1,7 +1,7 @@
 # modules/power.nix — 电源管理与功耗释放策略
 # 作用：TLP 能效调度、睡眠模式基线、throttled 功耗墙调优与编译性能释放
 # 依赖：无
-# 目录：1. 睡眠模式  2. TLP 电源管理策略  3. throttled 功耗墙优化 (方案 B)
+# 目录：1. 睡眠模式与合盖锁屏  2. TLP 电源管理策略  3. 功耗墙策略 (方案 A 与 方案 B 快速切换)
 { ... }:
 
 let
@@ -26,10 +26,20 @@ let
   batTripTemp = 80; # 电池核心温度保护墙 (°C)
 in
 {
-  # ── 1. 睡眠模式 ──────────────────────────────
+  # ── 1. 睡眠模式与合盖锁屏 ────────────────────
   # [SV8] 本机经实测支持 s2idle 与 deep 两种睡眠模式（实测见 NOTES.md）
   # 当前保持系统默认；若需要深度 S3 睡眠可开启下方选项
   # [ALT] boot.kernelParams = [ "mem_sleep_default=deep" ];
+
+  # 开启 UPower 硬件供电与电池状态守护服务
+  services.upower.enable = true;
+
+  # 合盖与电源键行为：统一为挂起睡眠（由 xss-lock 自动联动 slock 锁屏保护隐私）
+  services.logind.settings.Login = {
+    HandleLidSwitch = "suspend";
+    HandleLidSwitchExternalPower = "suspend";
+    HandlePowerKey = "suspend";
+  };
 
   # ── 2. TLP 电源管理策略 ───────────────────────
   # [SV8] 启用 TLP 高级电源管理，关闭互斥的 power-profiles-daemon
