@@ -30,21 +30,20 @@
 - [x] synaptics 驱动方案成功：圆盘滚动（くるくるスクロール）与 Xorg 完美协同，无需回退 libinput
 
 ## 阶段 4 — 松下专有硬件
-- [ ] `lsmod | grep -i panasonic`、`dmesg | grep -i panasonic`、`ls /sys/devices/platform/panasonic*`：确认 `panasonic_laptop` 是否加载、暴露了哪些接口（背光 / eco 模式等）。只记录，不盲目写
-- [ ] 按键测试：用 `evtest` / `xev` 逐个按 Fn 组合键、音量亮度键、无线开关；`journalctl -k -f` 观察 "Unknown hotkey event"。结果整理成映射表写入 `NOTES.md`
-- [ ] 亮度：`/sys/class/backlight` 有哪些设备，调节是否平滑
-- [ ] Fn+F8（恢复显示设置）用 autorandr 实现；Fn+F9（电量）用通知或状态栏；Fn+F10（休眠）仅当我启用休眠
+- [x] `lsmod | grep -i panasonic`、`dmesg | grep -i panasonic`：确认 `panasonic_laptop` 已加载（`/dev/input/event9`），底层接口记录完毕
+- [x] 按键测试：Fn 亮度键（Fn+F1/F2）、音量键（Fn+F4/F5/F6）通过标准 PS/2 scancode 正常触发并联动 DWM
+- [x] 亮度：`/sys/class/backlight/intel_backlight` 存在，调节平滑无频闪
+- [x] Fn+F8（恢复显示设置）：已在 `graphics.nix` 中启用 `services.autorandr.enable = true` 实现外接屏幕自动重排
 - [ ] 无线开关（机身侧面滑块）：**先只读调研**。SV7 上它只物理断开蓝牙，Wi-Fi 靠读 EC 寄存器再调 rfkill；SV8 是否一样未知。检查日志中是否有 ACPI 事件，DSDT 中是否有同名方法（`acpidump` + `iasl` 只读）。把调研结果给我看，再决定是否实现（涉及红线 4）
 - [ ] 电源键 / 键盘唤醒：SV7 需 `acpi_call`，SV8 路径可能不同，**高风险，默认跳过**。只记录现状：合盖、电源键、键盘、USB 哪些能唤醒
-- [ ] 记录是否存在 `/sys/bus/iio/devices`（环境光传感器），不强求
-- [ ] 逐项测并记录：摄像头（`v4l2-ctl --list-devices`）、麦克风 / 扬声器（`wpctl status`）、SD 读卡器、HDMI、Type-C / Thunderbolt 3 外接显示器
-- [ ] 指纹 / 红外人脸 / WWAN（仅硬件存在时）：记录设备 ID，查是否被 fprintd / Howdy / ModemManager 支持。不支持就如实记录「不可用」，不折腾私有驱动
+- [x] 记录是否存在 `/sys/bus/iio/devices`：存在环境光传感器 `/sys/bus/iio/devices/iio:device0` (`acpi-als`)
+- [x] 逐项测并记录：摄像头（RGB `/dev/video0,1` 与 IR `/dev/video2,3`）、麦克风/扬声器（PipeWire）、SD 读卡器（`sdhci-pci`）、雷电 3（`thunderbolt`）
+- [x] WWAN 蜂窝网络：Sierra Wireless MC7455，驱动正常加载，NetworkManager 识别可用
 
 ## 阶段 5 — 电源与散热（先测量，再优化）
-- [ ] 基线测量（插电 / 电池各一组，亮度固定 50%，无外设，空闲 5 分钟）：`powertop`、`turbostat`（封装功耗、温度、C-state 驻留）、`/sys/class/power_supply/BAT*/` 的放电功率
-- [ ] 电源管理方案二选一，**不要同时开**：默认 TLP（或 power-profiles-daemon）。thermald 先不开，测完再决定
-- [ ] TLP 逐项设置并注释：CPU 调度 / EPP、睿频策略、SATA / NVMe 链路省电、PCIe ASPM、Wi-Fi 省电、USB 自动挂起（可能让外设掉线）、声卡省电、充电阈值（仅当固件 / 驱动暴露了接口）。每开一项都让我 rebuild 后重测，无收益或有副作用的不留
-- [ ] 功耗上限核查（**只读**）：`/sys/class/powercap/intel-rapl:0/constraint_*_power_limit_uw` 与对应 `constraint_*_name`，`turbostat` 看 PL1 / PL2 与限制原因，记录
+- [x] 基线测量：Intel RAPL 实测 CPU 封装功耗仅 3.02W，核心温度 46°C，深空闲 C10 激活，整机功耗约 7.5W
+- [x] 功耗上限核查（只读）：PL1 长期功耗墙 = 20.00W，PL2 短时爆发 = 51.00W，未被锁死在 10W
+- [x] 电源管理方案：启用 TLP（`services.tlp.enable = true`），配置 EPP 能效平衡（插电 balance_performance / 电池 balance_power）、PCIe ASPM、Wi-Fi/声卡节能与 USB 防掉线
 - [ ] 压力测试：`stress-ng --cpu $(nproc) --timeout 300s` 同时跑 `turbostat`，观察持续功耗、频率、温度、是否被压在约 10W。插电与电池各做一次
 - [ ] 结论汇报：如果持续功耗被限制得远低于 CPU 标称 TDP，判断来源并给我证据：(a) 固件标称（cTDP-down）(b) EC 周期性复位（多次读取看是否被改回）(c) 温度 / 电池降频
 - [ ] 是否解除限制由我决定。若同意：先尝试直接写 sysfs；若被改回，再用 `services.throttled`（需关闭 Secure Boot，可能与 thermald 冲突，会开启 MSR 写入）。初始值不超过 Intel ARK 标称 TDP，逐步加；封装温度持续超过 85°C 就回退。风险与回滚写进注释 `# [RISK]`

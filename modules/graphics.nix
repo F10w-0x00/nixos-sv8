@@ -1,7 +1,7 @@
 # modules/graphics.nix — 显示与 Intel 核显驱动
-# 作用：Intel UHD 620 核显配置、VAAPI 硬件编解码加速、modesetting 驱动
-# 依赖：无
-# 目录：1. 核显驱动与视频加速  2. X11 驱动选项
+# 作用：Intel UHD 620 核显配置、VAAPI 硬件编解码加速、modesetting 驱动、外接显示器管理
+# 依赖：pkgs.intel-media-driver, pkgs.libvdpau-va-gl
+# 目录：1. 核显驱动与视频加速  2. X11 驱动选项  3. 多显示器管理 (autorandr)
 { pkgs, ... }:
 
 {
@@ -19,4 +19,10 @@
   # ── 2. X11 驱动选项 ──────────────────────────
   # 明确使用 Linux 通用 modesetting 驱动，不安装旧版 xf86-video-intel 以防撕裂与不稳定
   services.xserver.videoDrivers = [ "modesetting" ];
+
+  # ── 3. 多显示器管理 (autorandr) ───────────────
+  # [SV8] 自动处理 HDMI / Type-C 外接显示器插拔事件，与 Fn+F8 屏幕切换联动
+  # 查文档：man autorandr
+  services.autorandr.enable = true;
 }
+

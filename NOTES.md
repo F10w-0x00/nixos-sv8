@@ -143,5 +143,38 @@
 - `xinput list-props 12` 验证驱动属性：
   - `Synaptics Circular Scrolling (352) = 1`
   - `Synaptics Circular Pad (355) = 1`
-  - `Synaptics Circular Scrolling Distance (353) = 0.1`
+  - `Synaptics Circular Scrolling Distance (353) = 0.2` (调校后手感最佳)
 - 实机体验：圆盘画圈滚动平滑自然，轻触左键、双指右键灵敏有效。
+
+## 阶段 4 — 松下专有硬件与多媒体外设 (2026-10-19)
+
+### 1. 松下平台驱动与按键
+- **`panasonic_laptop` 驱动**：已加载，输入设备绑定在 `/dev/input/event9` (`Panasonic Laptop Support`)。
+- **ACPI 事件**：日志中出现的 `Unknown hotkey event: 0x0030 / 0x0031` 为松下新机型固件广播通知，Fn 快捷键通过标准 AT PS/2 键盘发送标准 keycode。
+- **多媒体快捷键**：
+  - 亮度：`Fn + F1` (Down) / `Fn + F2` (Up) 直接调控 `intel_backlight`，步进 5%，平滑无频闪。
+  - 声音：`Fn + F4` (Mute)、`Fn + F5` (Down)、`Fn + F6` (Up) 直接联动 PipeWire (`wpctl`)，工作正常。
+  - 锁屏：`Super + Shift + l` 调用 `slock` 黑屏锁屏，盲打输入密码回车解锁。
+
+### 2. 显示背光与环境光传感器 (ALS)
+- **背光设备**: `/sys/class/backlight/intel_backlight`，最大亮度 `16326`。
+- **环境光传感器**: `/sys/bus/iio/devices/iio:device0` (`acpi-als`)，存在且已由内核正确识别。
+
+### 3. 音视频与外设
+- **摄像头**: Bison Electronics USB HD Webcam (`5986:1156`)
+  - RGB 摄像头：`/dev/video0`, `/dev/video1`
+  - 红外人脸相机 (IR Camera)：`/dev/video2`, `/dev/video3`
+- **音频系统**: PipeWire 1.6.6 + WirePlumber，内置立体声扬声器与模拟麦克风均已连接并默认路由。
+- **SD 读卡器**: O2 Micro OZ777 (`1217:8520`)，驱动 `sdhci-pci` 正常运行。
+- **雷电 3 (Thunderbolt 3)**: Intel JHL6340 Alpine Ridge 控制器，驱动 `thunderbolt` 正常加载。
+- **WWAN (蜂窝数据)**: Sierra Wireless MC7455 (`1199:9071`)，驱动 `qcserial` + `cdc_mbim` 正常加载，NetworkManager 识别为 `enabled`。
+
+### 4. 功耗基准测量 (Intel RAPL & C-states)
+- **CPU 封装功耗**: 实测稳定在 **3.02 W ~ 3.53 W**，整机功耗预估仅 **7.3 W ~ 7.8 W**。
+- **CPU 温度**: 核心温度 **46.0 °C**，南桥 **39.0 °C**，机身温凉，风扇静音。
+- **深度节能 (C-States)**: 核心成功进入 **`C10` 极致节能深度睡眠**（累计驻留 > 1800 秒）。
+- **固件功耗墙**: PL1 (长期) = **20.00 W**，PL2 (短时爆发) = **51.00 W**。
+
+### 5. 壁纸自包含与规范整理
+- 将壁纸从 `~/Pictures` 迁移并打包入仓库 `wallpapers/wallpaper.png`，完全实现 Flake 声明式自包含与可移植性。
+- 修复 `xorg.xinput` 废弃警告，升级为顶级包名 `pkgs.xinput`。
