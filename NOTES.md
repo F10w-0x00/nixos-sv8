@@ -178,3 +178,35 @@
 ### 5. 壁纸自包含与规范整理
 - 将壁纸从 `~/Pictures` 迁移并打包入仓库 `wallpapers/wallpaper.png`，完全实现 Flake 声明式自包含与可移植性。
 - 修复 `xorg.xinput` 废弃警告，升级为顶级包名 `pkgs.xinput`。
+
+### 6. 满载压力测试与 10W 功耗墙溯源结论 (2026-10-19)
+- **实测数据记录 (8 线程 stress-ng 满载)**：
+  - Sec 1~2: 瞬时突发 `11.69 W`，全核 `1.90 GHz`，核心温度 `46.0 °C`
+  - Sec 3~12: 持续恒定在 **`10.16 W ~ 10.34 W`**，全核回落至 `1.60 ~ 1.70 GHz`，核心温度 `48.0 ~ 50.0 °C`
+- **限制溯源与确凿证据**：
+  - 现象：即使 CPU 核心仅 49°C，远低于常规热保护点（100°C），持续功耗仍被强行锁死在 10W。
+  - 来源证据：读取主板热敏区域，`thermal_zone5 (SEN2)` 设定了外壳温控点 `trip_point_3_temp = 56.05 °C (hot)`。松下固件为了保证轻薄镁合金机身在用户膝盖上使用不发烫（Lap Comfort），由 EC 与 DPTF 联合介入，发送强制降功耗信号至 10W。
+- **用户决策 (2026-10-19)**：
+  - **选择方案 A（保持 10W 原厂保守策略）**：追求极致静音、冰凉触感与长续航，日常编程与多任务完全足够。
+- **未来若需解除限制的完整指南 (Unlock Recipe)**：
+  - 在 `modules/power.nix` 取消 `services.throttled` 注释：
+    ```nix
+    services.throttled = {
+      enable = true;
+      extraConfig = ''
+        [GENERAL]
+        Enabled: True
+        [BATTERY]
+        PL1_Tdp_W: 15
+        PL2_Tdp_W: 25
+        Trip_Temp_C: 80
+        [AC]
+        PL1_Tdp_W: 20
+        PL2_Tdp_W: 40
+        Trip_Temp_C: 85
+      '';
+    };
+    ```
+  - 运行 `sudo nixos-rebuild switch --flake ~/nixos-config#sv8`。
+  - 效果：全核持续频率可回升至 2.4 ~ 2.8 GHz+，但满载底壳温度会上升至 65~70°C。
+
