@@ -75,3 +75,14 @@
 - [x] 在 `NOTES.md` 整理「硬件功能完整对照表」：覆盖 20 项硬件功能状态与实测方案（圆形滚动、点按、Fn 按键、功耗双方案、摄像头、SD 读卡器、雷电等）
 - [x] 交付一份 5 分钟「阅读导览」：先看哪几个文件、各自改什么、最容易改错的 3 个地方写入 README 核心位置
 - [x] 最终 commit，`git tag v1`；报告仓库路径和日常交付结论
+
+## 阶段 9 — 日常调优、体验打磨与长期归档
+- [x] DWM 工作区由 1~9 精简为常用 1~6（`pkgs/dwm/config.h`）
+- [x] 顶栏 slstatus 优化：移除冗余 Audio 模块，WIFI 改为网卡链路状态判定（`✓/✗`），时间采用简明 `%H:%M`
+- [x] st 终端补丁：打入 `st-clickurl`（Ctrl+Click 直达浏览器）与 `st-glyph-wide-support`（彻底修复 `` 等宽图标截断）
+- [x] 默认浏览器与 MIME 关联：系统全局固化 `BROWSER=firefox` 与 `xdg.mime.defaultApplications`
+- [x] VS Code 白屏卡死问题溯源修复：配置 `"files.simpleDialog.enable": true`，DWM 补全 portal 浮动规则，导入 `XDG_CURRENT_DESKTOP=dwm`
+- [x] 功耗策略根据用户 1h 离电实测（平均 7.45W）回滚至方案 A（原厂 10W 冷凉静音模式）
+- [x] 用户级配置 (`~/.config`) 现状与管理方案调研分析，在 `NOTES.md` 中完整记录归档，待后续学习 Home-Manager 后权衡决策
+- [x] 用户执行 `nixos-rebuild switch` 固化为全新稳定代数 Generation 26
+- [x] 代码归档与 Git 提交，发布版本标签 `v1.1`

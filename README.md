@@ -114,8 +114,8 @@
 | `Super + Enter` | 窗口提升至主分屏 | 将当前聚焦窗口切换为主窗口 |
 | `Super + t / f / m` | 切换排版模式 | 平铺 (Tile) / 浮动 (Floating) / 单窗口全屏 (Monocle) |
 | `Super + Space` | 快速切回上一模式 | 快速在平铺与浮动间切换 |
-| `Super + 1~9` | 切换工作区 (Tag) | 切换到指定虚拟桌面 |
-| `Super + Shift + 1~9` | 发送窗口至工作区 | 将当前聚焦窗口移入指定桌面 |
+| `Super + 1~6` | 切换工作区 (Tag) | 切换到指定虚拟桌面 (1~6) |
+| `Super + Shift + 1~6` | 发送窗口至工作区 | 将当前聚焦窗口移入指定桌面 (1~6) |
 | `Super + Shift + l` | 手动锁屏 | 立即调用 `slock` 黑屏锁屏，盲打输入用户密码回车解锁 |
 | `Print` (Fn + Print) | 区域截图 | 选区截图并自动拷入系统剪贴板 |
 | `Fn + F1 / F2` | 屏幕亮度减 / 增 | 联动 `brightnessctl`，步进 5%，平滑无频闪 |
@@ -181,7 +181,7 @@ sudo nix-store --optimise
 ---
 
 ## 已知事项与硬件特性 (CF-SV8)
-1. **CPU**：Intel Core i7-8665U (Whiskey Lake, 4C/8T)，当前开启方案 B (20W 满血编译)。
+1. **CPU**：Intel Core i7-8665U (Whiskey Lake, 4C/8T)，当前开启方案 A (10W 冷凉静音超长续航)。
 2. **内存**：16GB LPDDR3 (板载)，已配置 ZRAM 50% 动态压缩交换空间防 OOM。
 3. **硬盘**：256GB SATA SSD (`sda`)，已启用系统级 `fstrim.weekly`。
 4. **键盘**：采用标准美式 US 键盘布局（`layout = "us"`），完全移除 Fcitx5，保留全套 CJK 字体用于清晰阅读。

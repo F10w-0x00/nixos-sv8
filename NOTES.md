@@ -298,7 +298,7 @@
 | **系统休眠 (Hibernate)** | **已跳过** | 用户阶段 0 决策跳过 | 阶段 0 明确无需磁盘 swap 挂起，纯使用 S3 deep 睡眠，节约 SSD 磨损 |
 | **多途径系统唤醒** | **正常** | UEFI 2.70 AMI 固件原生支持 | 开盖 (`LID0`)、轻按电源键 (`PWRF`)、外接鼠标 (`XHC`) 均可唤醒，无需高风险 `acpi_call` |
 | **屏幕闪屏** | **无闪屏** | Intel UHD 620 (`i915` + modesetting) | 多小时重负载、调亮度、编译未发生任何闪屏，内核日志健康 |
-| **功耗与编译性能** | **正常** | 双方案自由切换 (`modules/power.nix`) | 方案 B (当前生效)：20W 满血释放，全核 2.4~3.0GHz 极速编译；方案 A (备用)：10W 极度冷凉 |
+| **功耗与编译性能** | **正常** | 双方案自由切换 (`modules/power.nix`) | 方案 A (当前生效)：10W 极度冷凉静音超长续航；方案 B (备用)：20W 满血释放，全核 2.4~3.0GHz 极速编译 |
 | **放电功耗与续航** | **正常** | TLP 能效调度 + Intel C-states | CPU 空闲封装仅 3.02W，C10 深度驻留，整机待机仅 ~7.5W |
 | **RGB 高清摄像头** | **正常** | 内核 UVC 驱动 (`/dev/video0,1`) | Bison Electronics 720p HD Webcam 出流正常 |
 | **红外人脸相机 (IR)** | **就绪** | 内核 UVC 驱动 (`/dev/video2,3`) | 红外硬件完备可用，支持 Linux Howdy 人脸解锁方案 |
@@ -308,6 +308,45 @@
 | **Type-C / 雷电 3 (TB3)** | **正常** | `thunderbolt` + UCSI PD 驱动 | 支持 65W PD 诱骗快充与雷电高速外设数据传输 |
 | **指纹识别模块** | **不可用** | 硬件未配备 | 原厂选配项，本机未搭载指纹传感器硬件（`lsusb`/`lspci` 确认不存在） |
 | **WWAN 4G 蜂窝网络** | **正常** | Sierra Wireless MC7455 (`qcserial` + `cdc_mbim`) | 驱动加载完毕，NetworkManager 识别为 `enabled` |
+
+---
+
+## 阶段 9 — 用户级配置 (~/.config) 盘点与 Home-Manager 演进预留 (2026-10-19)
+
+### 1. 系统级配置 vs 用户级配置现状边界
+- **系统级环境（100% 声明式且可复现）**：
+  - DWM 窗口管理器、st 终端、slstatus 状态栏、dmenu 启动器：源码与 `config.h` 已嵌入仓库并通过 `.override` 编译，不产生或依赖 `~/.config` 文件。
+  - 会话初始化：`startx`、144 DPI 全局缩放、picom 半透明、dunst 通知、slock 锁屏、壁纸自包含加载、默认浏览器与 MIME 关联：全部由 `modules/` 声明并生成全局配置，重装或迁移新机 100% 自动还原。
+- **用户级环境（`~/.config/`）**：
+  - 默认情况下，NixOS 的操作系统级 Flake 不接管 `$HOME/.config/`。
+
+### 2. 当前 `~/.config/` 资产盘点
+- **可忽略的历史遗留垃圾**：
+  - 原厂测试 KDE Plasma 期间自动生成的大量配置文件（如 `kdeglobals`, `kwinrc`, `plasma*`, `dolphinrc`, `kate*`, `kded*`, `ksmserverrc` 等，共占 ~70%），已与当前 DWM 系统脱钩，重装时无需备份。
+- **真正具有定制价值的核心配置文件**：
+  1. **VS Code**：`/home/flynn/.config/Code/User/settings.json`
+     - 关键配置：`"files.simpleDialog.enable": true`（彻底消除保存/打开文件时的白屏卡死现象）。
+     - 个人偏好：`"workbench.colorTheme": "Tokyo Night Storm"`、`"editor.fontSize": 18`、C/C++ runner 脚本。
+  2. **Alacritty**：`/home/flynn/.config/alacritty.toml`
+     - 个人偏好：`size = 13.0`、JetBrainsMono Nerd Font、`opacity = 0.85`、无边框全屏模式。
+  3. **Fastfetch**：`/home/flynn/.config/fastfetch/config.jsonc`
+     - 个人偏好：自定义 ASCII 图标与硬件概览模块排版。
+  4. **Btop**：`/home/flynn/.config/btop/btop.conf`
+     - 个人偏好：资源监控器主题与刷新频率。
+
+### 3. 未来管理方案分析与 Home-Manager 评估
+- **演进路线 A：引入 Home-Manager（纯函数式 Nix 声明）**：
+  - **实现方式**：在 `flake.nix` 引入 `inputs.home-manager`，将用户配置统一声明为 Nix 表达式。
+  - **优势**：跨设备无缝 100% 全自动化部署，单条 flake 命令同步整机 + 用户环境。
+  - **注意事项/考量**：
+    - Home-Manager 生成的配置文件为 `/nix/store` 的只读符号链接（read-only symlink）。
+    - 部分 GUI 应用（如 VS Code 图形界面修改设置、扩展写入配置）在面对只读文件时可能提示权限不足或失败。
+- **演进路线 B：轻量 Dotfiles 方案（GNU Stow 或仓库软链接脚本）**：
+  - **实现方式**：在 `nixos-config` 内维护 `dotfiles/` 目录，通过脚本软链接至 `~/.config/`。
+  - **优势**：保持文件可读写性，VS Code 界面随意修改无阻碍，无额外 flake 外部依赖。
+- **决策结论 (2026-10-19)**：
+  - 用户决定暂缓引入，待后续学习掌握 Home-Manager 机制后再做权衡选择。
+  - 当前维持现状，核心配置及修复白屏的关键选项已在本文档归档记录。
 
 
 
