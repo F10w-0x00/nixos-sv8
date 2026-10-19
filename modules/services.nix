@@ -41,6 +41,20 @@
 
   programs.firefox.enable = true; # 常用网页浏览器
 
+  # 默认应用与 MIME 关联：将网页链接与 HTML 文件统一关联至 Firefox
+  xdg.mime.defaultApplications = {
+    "text/html" = "firefox.desktop";
+    "x-scheme-handler/http" = "firefox.desktop";
+    "x-scheme-handler/https" = "firefox.desktop";
+    "x-scheme-handler/about" = "firefox.desktop";
+    "x-scheme-handler/unknown" = "firefox.desktop";
+  };
+
+  # 全局默认浏览器环境变量
+  environment.sessionVariables = {
+    BROWSER = "firefox";
+  };
+
   # 局域网跨设备互传工具
   programs.localsend = {
     enable = true;

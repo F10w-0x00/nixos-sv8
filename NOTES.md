@@ -102,10 +102,10 @@
 
 ### 2. DWM 与 Suckless 工具链定制
 - 源码定制与补丁纳入 Git 管理：
-  - `pkgs/dwm/config.h`：使用 `Mod4` (Super/Win) 键；绑定音量、亮度、锁屏及截图快捷键；顶栏字号 11。
-  - `pkgs/st/config.h` & `pkgs/st/patches/`：打入官方三项回滚补丁（`st-scrollback` + `st-scrollback-mouse` + `altscreen`），支持鼠标滚轮平滑翻页与 Shift+PageUp/Down，字号 pixelsize=20。
+  - `pkgs/dwm/config.h`：工作区精简为 1~6（删除 7/8/9）；使用 `Mod4` (Super/Win) 键；绑定音量、亮度、锁屏及截图快捷键；顶栏字号 11。
+  - `pkgs/st/config.h` & `pkgs/st/patches/`：打入官方回滚补丁、`st-glyph-wide-support` 宽字形渲染补丁以及 `st-clickurl` 补丁（支持按住 Ctrl 悬停高亮、Ctrl+鼠标左键直接呼出 Firefox），字号 pixelsize=20。
   - `pkgs/dmenu/config.h`：Catppuccin 深色配色，字号 11。
-  - `pkgs/slstatus/config.h`：纯净显示 `[BAT %s%%]`（去除多余状态符号）、CPU、RAM、Wi-Fi、时钟。
+  - `pkgs/slstatus/config.h`：纯净极简显示 CPU、RAM、Wi-Fi `[WIFI ✓/✗]`、电量 `[BAT %s%%]`、短时钟 `[%H:%M]`。
 - 会话组件：
   - 壁纸：自动应用 `/home/flynn/Pictures/Kurisu.png`。
   - 半透明：启用 `picom` 硬件加速合成器，设置 `st` 不透明度为 0.8。
@@ -187,9 +187,8 @@
   - 现象：即使 CPU 核心仅 49°C，远低于常规热保护点（100°C），持续功耗仍被强行锁死在 10W。
   - 来源证据：读取主板热敏区域，`thermal_zone5 (SEN2)` 设定了外壳温控点 `trip_point_3_temp = 56.05 °C (hot)`。松下固件为了保证轻薄镁合金机身在用户膝盖上使用不发烫（Lap Comfort），由 EC 与 DPTF 联合介入，发送强制降功耗信号至 10W。
 - **用户决策演进 (2026-10-19)**：
-  - **初次决策**：方案 A（保持 10W 原厂保守策略）。
-  - **最新变更**：**采纳方案 B（启用 `services.throttled` 解锁 20W 性能）**。
-    - **决策原因**：用户日常绝大多数场景为插电 (AC) 办公，且存在大量代码编译需求（C/C++、Nix 构建等）。原厂 10W 功耗墙导致 CPU 在长时间编译时全核被限制在 1.6~1.7 GHz，极大拖慢构建速度；解锁至 20W 可大幅提升全核持续睿频至 2.4 ~ 3.0 GHz+，大幅缩短编译耗时。
+  - **当前状态**：**采纳方案 A（保持 10W 原厂冷凉静音超长续航策略）**。
+    - **决策原因**：用户经 1.5h 实机离电开发实测（平均功耗约 10.9W），决定全面优先保障低温、安静与超长续航，将功耗策略切换回原厂方案 A（关闭 `services.throttled`，恢复纯净原厂 10W 控制）。
 - **方案 B 调优与落地配置细节**：
   - 在 `modules/power.nix` 启用 `services.throttled` 并配置：
     ```nix
@@ -236,7 +235,7 @@
 
 ### 1. 方案特性横向对比
 
-| 对比维度 | 方案 A（原厂冷凉静音） | 方案 B（满血编译性能，当前生效） |
+| 对比维度 | 方案 A（原厂冷凉静音，当前生效） | 方案 B（满血编译性能） |
 | :--- | :--- | :--- |
 | **持续功耗 (PL1)** | **10.16 W ~ 10.34 W** (固件/EC 强控) | **20.00 W** (AC 插电) / **15.00 W** (电池) |
 | **短时爆发 (PL2)** | 20.00 W ~ 51.00 W (瞬时) | **40.00 W** (AC 插电) / **25.00 W** (电池) |

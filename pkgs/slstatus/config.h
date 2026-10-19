@@ -68,7 +68,7 @@ static const struct arg args[] = {
 	/* function     format               argument */
 	{ cpu_perc,      "[CPU %s%%] ",       NULL },
 	{ ram_perc,      "[RAM %s%%] ",       NULL },
-	{ wifi_perc,     "[WIFI %s%%] ",      "wlo1" },
+	{ run_command,   "[WIFI %s] ",        "grep -qs up /sys/class/net/wlo1/operstate && echo ✓ || echo ✗" },
 	{ battery_perc,  "[BAT %s%%] ",       "BAT1" },
-	{ datetime,      "[%s]",              "%Y-%m-%d %H:%M" },
+	{ datetime,      "[%s]",              "%H:%M" },
 };

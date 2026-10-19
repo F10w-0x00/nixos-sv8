@@ -52,10 +52,10 @@
 │   ├── fonts-ime.nix                  # 中日韩全套字体（Noto CJK）、Fontconfig 回退优先级（免输入法）
 │   └── services.nix                   # NetworkManager、蓝牙、PipeWire 音频、PCManFM、Zathura、Clash
 └── pkgs/                              # 本地自定义包与源码配置树
-    ├── dwm/config.h                   # DWM 核心按键绑定与外观规则
-    ├── st/config.h & patches/         # st 终端回滚/滚轮翻页补丁、竖线光标、字号配置
+    ├── dwm/config.h                   # DWM 核心按键绑定与工作区 (1~6)
+    ├── st/config.h & patches/         # st 终端回滚/宽字形/Ctrl+Click 补丁、竖线光标、字号配置
     ├── dmenu/config.h                 # dmenu 配色与字体
-    └── slstatus/config.h              # 状态栏监控项与电量格式
+    └── slstatus/config.h              # 状态栏监控项：CPU/RAM/WIFI(✓/✗)/BAT/短时钟
 ```
 
 ---
@@ -86,8 +86,8 @@
 
 本机针对松下轻薄镁合金特性与日常重负载编译需求，预设了两套成熟方案：
 
-- **方案 A（原厂 10W 冷凉静音）**：持续功耗 10W，CPU 全核 1.6~1.7 GHz，外壳低于 48°C，超长续航，适合不插电移动办公或放膝盖上使用。
-- **方案 B（20W 满血编译性能，当前生效）**：持续功耗 20W，CPU 全核 2.4~3.0GHz+，编译耗时减半，适合插电桌面写代码与编译。
+- **方案 A（原厂 10W 冷凉静音，当前生效）**：持续功耗 10W，CPU 全核 1.6~1.7 GHz，外壳低于 48°C，超长续航，适合不插电移动办公或放膝盖上使用。
+- **方案 B（20W 满血编译性能）**：持续功耗 20W，CPU 全核 2.4~3.0GHz+，编译耗时减半，适合插电桌面写代码与编译。
 
 ### 秒级切换方法
 1. **即时临时切回方案 A（不重启、不 rebuild）**：
