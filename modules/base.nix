@@ -5,8 +5,9 @@
 { config, pkgs, ... }:
 
 let
-  # 引导菜单保留代数上限。可改：整数值（如 5 到 20）
-  bootLimit = 10;
+  # 引导菜单保留代数上限（按用户最新需求保留 3 代）
+  # 可改：整数值（如 3 到 10）
+  bootLimit = 3;
 in
 {
   # ── 1. Nix 与 Flakes 设置 ────────────────────
@@ -18,7 +19,13 @@ in
       "flakes"
     ];
     auto-optimise-store = true; # 自动硬链接重复文件以节省 SSD 空间
-    # [ALT] 暂不开启 nix.gc 自动清理，避免构建缓存被冲掉；日常由用户按需执行 nix-collect-garbage
+  };
+
+  # 自动垃圾回收策略：每 7 天自动清理超过 7 天的旧包与缓存
+  nix.gc = {
+    automatic = true;
+    dates = "weekly";
+    options = "--delete-older-than 7d";
   };
 
   # ── 2. 引导加载器 ────────────────────────────
