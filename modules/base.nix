@@ -84,10 +84,18 @@ in
 
   environment.localBinInPath = true; # 将 ~/.local/bin 自动加入 PATH 环境变量
 
+  # Git 版本控制基础支持
+  programs.git.enable = true;
+
+  # 按项目轻量级环境自动加载（direnv + nix-direnv，支持 nix shell / nix develop 自动化）
+  programs.direnv = {
+    enable = true;
+    nix-direnv.enable = true;
+  };
+
   # 系统级基础排障与维护工具
   environment.systemPackages = with pkgs; [
     vim
-    git
     wget
     curl
     pciutils

@@ -1,7 +1,7 @@
 # modules/services.nix — 系统服务与日常应用
 # 作用：网络管理、蓝牙、PipeWire 音频、fwupd 固件检测、日常常驻工具
 # 依赖：无
-# 目录：1. 网络与蓝牙  2. 音频子系统  3. 固件检测 (fwupd)  4. 打印与日常应用
+# 目录：1. 网络与蓝牙  2. 音频子系统  3. 固件检测 (fwupd)  4. 存储、桌面支持与日常应用
 { pkgs, ... }:
 
 {
@@ -29,8 +29,8 @@
   # [SV8] 仅用于只读检查固件更新信息（fwupdmgr get-updates），红线规则严禁自动刷固件
   services.fwupd.enable = true;
 
-  # ── 4. 打印与日常应用 ────────────────────────
-  services.printing.enable = true; # CUPS 打印服务
+  # ── 4. 存储、桌面支持与日常应用 ──────────────
+  services.printing.enable = false; # 不需要打印服务保持关闭，节约内存与启动耗时
   services.flatpak.enable = true; # Flatpak 跨发行版软件包支持
   xdg.portal = {
     enable = true;
@@ -56,6 +56,8 @@
   };
 
   environment.systemPackages = with pkgs; [
+    pcmanfm # [阶段 7 选型] 轻量级图形文件管理器，极速、与 DWM 契合
+    zathura # [阶段 7 选型] 极简 Vim 键位平铺 PDF 阅读器
     piliplus # Bilibili 第三方客户端
     newsflash # 现代化 RSS 阅读器
     mpv # 轻量级多媒体播放器
