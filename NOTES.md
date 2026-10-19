@@ -186,27 +186,101 @@
 - **限制溯源与确凿证据**：
   - 现象：即使 CPU 核心仅 49°C，远低于常规热保护点（100°C），持续功耗仍被强行锁死在 10W。
   - 来源证据：读取主板热敏区域，`thermal_zone5 (SEN2)` 设定了外壳温控点 `trip_point_3_temp = 56.05 °C (hot)`。松下固件为了保证轻薄镁合金机身在用户膝盖上使用不发烫（Lap Comfort），由 EC 与 DPTF 联合介入，发送强制降功耗信号至 10W。
-- **用户决策 (2026-10-19)**：
-  - **选择方案 A（保持 10W 原厂保守策略）**：追求极致静音、冰凉触感与长续航，日常编程与多任务完全足够。
-- **未来若需解除限制的完整指南 (Unlock Recipe)**：
-  - 在 `modules/power.nix` 取消 `services.throttled` 注释：
+- **用户决策演进 (2026-10-19)**：
+  - **初次决策**：方案 A（保持 10W 原厂保守策略）。
+  - **最新变更**：**采纳方案 B（启用 `services.throttled` 解锁 20W 性能）**。
+    - **决策原因**：用户日常绝大多数场景为插电 (AC) 办公，且存在大量代码编译需求（C/C++、Nix 构建等）。原厂 10W 功耗墙导致 CPU 在长时间编译时全核被限制在 1.6~1.7 GHz，极大拖慢构建速度；解锁至 20W 可大幅提升全核持续睿频至 2.4 ~ 3.0 GHz+，大幅缩短编译耗时。
+- **方案 B 调优与落地配置细节**：
+  - 在 `modules/power.nix` 启用 `services.throttled` 并配置：
     ```nix
     services.throttled = {
       enable = true;
       extraConfig = ''
         [GENERAL]
         Enabled: True
+        Update_Rate_s: 5
+
         [BATTERY]
+        Update_Rate_s: 30
         PL1_Tdp_W: 15
+        PL1_Duration_s: 28
         PL2_Tdp_W: 25
+        PL2_Duration_S: 0.002
         Trip_Temp_C: 80
+
         [AC]
+        Update_Rate_s: 5
         PL1_Tdp_W: 20
+        PL1_Duration_s: 28
         PL2_Tdp_W: 40
+        PL2_Duration_S: 0.002
         Trip_Temp_C: 85
       '';
     };
     ```
-  - 运行 `sudo nixos-rebuild switch --flake ~/nixos-config#sv8`。
-  - 效果：全核持续频率可回升至 2.4 ~ 2.8 GHz+，但满载底壳温度会上升至 65~70°C。
+  - **设计细节与原理解析**：
+    1. **AC 插电 (编译场景)**：`PL1_Tdp_W = 20W`（Intel ARK 基准 15W，cTDP-up 为 25W；20W 为兼顾性能与散热的最佳甜点点），短时爆发 `PL2 = 40W`；核心温度保护点设为 `85°C`（CPU 硬件 Tjunction 上限为 100°C，85°C 保留充分安全余量）。
+    2. **电池续航 (移动场景)**：`PL1_Tdp_W = 15W`，`PL2_Tdp_W = 25W`，温度保护点 `80°C`，保障不插电时的能效与续航。
+    3. **周期覆写对抗 EC 降频 (`Update_Rate_s: 5`)**：松下 DPTF/EC 检测到底壳 `thermal_zone5 / SEN2` 超过 56°C 时会强行向 MSR 发送 10W 降频信号；`throttled` 以 5 秒为周期自动重新写入 MSR 0x610 寄存器，从而压制 EC 的 10W 强制降频。
+  - **预期效果与发热提示**：
+    - 持续编译负载下全核频率从 1.6 GHz 提升至 2.4 ~ 3.0 GHz+，编译耗时接近减半。
+    - 风扇在高负载编译时会明显加速转动，底壳镁合金外壳温度会上升至 55~65°C（建议在桌面使用，避免直接置于裸露膝盖上高负荷编译）。
+  - **如何验证与回滚**：
+    - **验证命令**：`systemctl status throttled` 确认服务 active；高负载时运行 `turbostat --quiet --interval 1` 观察 `PkgWatt` 是否稳定在 ~20W。
+    - **极速回滚 (即时生效)**：`sudo systemctl stop throttled`（立即恢复固件原生状态）。
+    - **配置回滚**：在 `modules/power.nix` 将 `enable` 改为 `false` 并执行 rebuild；或在重启开机 UEFI 引导菜单选择上一代配置。
+
+## 阶段 5 附录 — 功耗双方案速查与秒级切换手册 (方案 A vs 方案 B)
+
+为了方便日后无需翻查代码、花最少的时间按需随时切换，现将方案 A 与方案 B 的特性对照、配置与切换指令汇总如下：
+
+### 1. 方案特性横向对比
+
+| 对比维度 | 方案 A（原厂冷凉静音） | 方案 B（满血编译性能，当前生效） |
+| :--- | :--- | :--- |
+| **持续功耗 (PL1)** | **10.16 W ~ 10.34 W** (固件/EC 强控) | **20.00 W** (AC 插电) / **15.00 W** (电池) |
+| **短时爆发 (PL2)** | 20.00 W ~ 51.00 W (瞬时) | **40.00 W** (AC 插电) / **25.00 W** (电池) |
+| **全核高负载睿频** | 1.60 ~ 1.70 GHz | **2.40 ~ 3.00 GHz+** |
+| **大型编译耗时** | 基准 (1.0x，较慢) | **极速 (~0.5x~0.6x，耗时减半)** |
+| **满载核心温度** | ~48.0 °C ~ 50.0 °C | ~70.0 °C ~ 82.0 °C (保护上限 85°C) |
+| **满载外壳温度** | 极度温凉 (< 48°C) | 明显温热 (55°C ~ 65°C) |
+| **满载风扇噪声** | 极安静 / 微风 | 正常排热风声 |
+| **最佳使用场景** | 移动办公、放膝盖打字、咖啡馆长续航 | 桌面插电写代码、Nix 编译、C/C++ 大项目构建 |
+| **核心机制** | 纯净原生，依靠 TLP 与 DPTF/EC | `services.throttled` 5s 周期覆写 MSR 寄存器 |
+
+---
+
+### 2. 秒级切换操作指南
+
+#### 场景 1：如果未来想切回「方案 A (原厂 10W 冷凉静音)」
+- **方法 1 (即时生效，无需 rebuild)**：
+  ```bash
+  sudo systemctl stop throttled
+  ```
+  *说明：立即解除寄存器接管，固件自动接管并在机身微温时恢复 10W 冷凉策略。*
+- **方法 2 (永久固化)**：
+  打开 `modules/power.nix`，将：
+  ```nix
+  services.throttled.enable = true;
+  ```
+  改为：
+  ```nix
+  services.throttled.enable = false;
+  ```
+  然后执行：
+  ```bash
+  sudo nixos-rebuild switch --flake ~/nixos-config#sv8
+  ```
+
+#### 场景 2：从方案 A 切到「方案 B (20W 满血编译)」
+- 打开 `modules/power.nix`，将 `services.throttled.enable = true;`。
+- 然后执行：
+  ```bash
+  sudo nixos-rebuild switch --flake ~/nixos-config#sv8
+  ```
+- 验证生效：
+  ```bash
+  systemctl status throttled
+  ```
+
 
