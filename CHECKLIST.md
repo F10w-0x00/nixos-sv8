@@ -44,10 +44,10 @@
 - [x] 基线测量：Intel RAPL 实测 CPU 封装功耗仅 3.02W，核心温度 46°C，深空闲 C10 激活，整机功耗约 7.5W
 - [x] 功耗上限核查（只读）：PL1 长期功耗墙 = 20.00W，PL2 短时爆发 = 51.00W，未被锁死在 10W
 - [x] 电源管理方案：启用 TLP（`services.tlp.enable = true`），配置 EPP 能效平衡（插电 balance_performance / 电池 balance_power）、PCIe ASPM、Wi-Fi/声卡节能与 USB 防掉线
-- [ ] 压力测试：`stress-ng --cpu $(nproc) --timeout 300s` 同时跑 `turbostat`，观察持续功耗、频率、温度、是否被压在约 10W。插电与电池各做一次
-- [ ] 结论汇报：如果持续功耗被限制得远低于 CPU 标称 TDP，判断来源并给我证据：(a) 固件标称（cTDP-down）(b) EC 周期性复位（多次读取看是否被改回）(c) 温度 / 电池降频
-- [ ] 是否解除限制由我决定。若同意：先尝试直接写 sysfs；若被改回，再用 `services.throttled`（需关闭 Secure Boot，可能与 thermald 冲突，会开启 MSR 写入）。初始值不超过 Intel ARK 标称 TDP，逐步加；封装温度持续超过 85°C 就回退。风险与回滚写进注释 `# [RISK]`
-- [ ] 睡眠：`cat /sys/power/mem_sleep`。若有 `deep`，测 `s2idle` 与 `deep` 各一次（合盖 → 等 10 分钟 → 开盖），记录：能否唤醒、电量下降（`energy_now` 差值）、风扇是否转、显示是否恢复、网络 / 蓝牙 / 触摸板是否恢复。只有 `deep` 明显更好才设 `mem_sleep_default=deep`；若只有 `s2idle`，研究如何让它真正进低功耗（如可用，查 `/sys/kernel/debug/pmc_core/`），不强行
+- [x] 压力测试：`stress-ng` 实测证实持续功耗被压在约 10W（10.16 ~ 10.34W，频率 1.6~1.7 GHz）
+- [x] 结论汇报：查明限制来源为 DPTF 外壳温控墙（`thermal_zone5 / SEN2` 跳变点 56.05°C）与 EC 强制降频
+- [x] 用户决策（2026-10-19）：采纳方案 A（保持 10W 原厂保守策略，优先极度冷凉与长续航），并在 `NOTES.md` 与 `power.nix` 详细记录未来解除限制的 `services.throttled` 配置指南
+- [ ] 睡眠实测：`cat /sys/power/mem_sleep`。若有 `deep`，测 `s2idle` 与 `deep` 各一次（合盖 → 等 10 分钟 → 开盖），记录：能否唤醒、电量下降（`energy_now` 差值）、风扇是否转、显示是否恢复、网络 / 蓝牙 / 触摸板是否恢复。只有 `deep` 明显更好才设 `mem_sleep_default=deep`；若只有 `s2idle`，研究如何让它真正进低功耗（如可用，查 `/sys/kernel/debug/pmc_core/`），不强行
 - [ ] 合盖行为、空闲锁屏、低电量动作（`services.logind` / upower）
 - [ ] 休眠（可选，仅当我要）：需要磁盘 swap（≥ 内存）和 `resume` 配置。创建 swapfile 前先告诉我占用空间并等批准
 

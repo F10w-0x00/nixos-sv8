@@ -1,7 +1,7 @@
 # modules/power.nix — 电源管理与睡眠策略
-# 作用：TLP 省电优化、CPU 能效调度、睡眠模式基线
+# 作用：TLP 省电优化、CPU 能效调度、睡眠模式基线、功耗限制说明
 # 依赖：无
-# 目录：1. 睡眠模式  2. TLP 电源管理策略
+# 目录：1. 睡眠模式  2. TLP 电源管理策略  3. 功耗墙策略与备用解锁说明
 { ... }:
 
 let
@@ -47,4 +47,24 @@ in
       USB_AUTOSUSPEND = 0;
     };
   };
+
+  # ── 3. 功耗墙策略与备用解锁说明 ───────────────
+  # [SV8] 用户决策（2026-10-19）：保持松下原厂 10W 保守策略，追求极致温控、静音与长续航。
+  # [ALT] 未来若需解锁 Intel 标称 15W/20W 满血性能，取消下方注释并 rebuild 即可：
+  # [RISK] 满载时底壳温度可能升至 65~70°C；详见 NOTES.md 阶段 5 记录
+  # services.throttled = {
+  #   enable = true;
+  #   extraConfig = ''
+  #     [GENERAL]
+  #     Enabled: True
+  #     [BATTERY]
+  #     PL1_Tdp_W: 15
+  #     PL2_Tdp_W: 25
+  #     Trip_Temp_C: 80
+  #     [AC]
+  #     PL1_Tdp_W: 20
+  #     PL2_Tdp_W: 40
+  #     Trip_Temp_C: 85
+  #   '';
+  # };
 }
