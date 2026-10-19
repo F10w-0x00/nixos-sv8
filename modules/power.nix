@@ -1,18 +1,29 @@
-# modules/power.nix — 电源管理与睡眠策略
-# 作用：TLP 省电优化、CPU 能效调度、睡眠模式基线、功耗限制说明
+# modules/power.nix — 电源管理与功耗释放策略
+# 作用：TLP 能效调度、睡眠模式基线、throttled 功耗墙调优与编译性能释放
 # 依赖：无
-# 目录：1. 睡眠模式  2. TLP 电源管理策略  3. 功耗墙策略与备用解锁说明
+# 目录：1. 睡眠模式  2. TLP 电源管理策略  3. throttled 功耗墙优化 (方案 B)
 { ... }:
 
 let
-  # 电源调优参数区（针对 Intel Core i7-8665U 与松下移动办公设计）
-  # EPP 能效偏好：插电时 balance_performance，电池时 balance_power（兼顾流畅响应与长续航）
+  # ── 能效与功耗调优参数区 ────────────────────────
+  # EPP 能效偏好：插电时 balance_performance，电池时 balance_power
   eppOnAc = "balance_performance";
   eppOnBat = "balance_power";
 
   # CPU 调频策略（Intel P-state 驱动标准 governor 为 powersave，实际频率由 EPP 动态调控）
   governorOnAc = "powersave";
   governorOnBat = "powersave";
+
+  # throttled 功耗释放参数 (针对 Core i7-8665U 编译性能优化)
+  # [SV8] 针对插电 (AC) 编译场景：解开 10W 原厂钳制至 20W (Intel ARK 标称 15W，cTDP-up 为 25W)
+  acPl1 = 20; # AC 持续功耗 (W)
+  acPl2 = 40; # AC 短时爆发功耗 (W)
+  acTripTemp = 85; # AC 核心温度保护墙 (°C)
+
+  # [SV8] 针对电池 (BAT) 场景：保持 15W 标称功耗，兼顾移动办公续航
+  batPl1 = 15; # 电池持续功耗 (W)
+  batPl2 = 25; # 电池短时爆发功耗 (W)
+  batTripTemp = 80; # 电池核心温度保护墙 (°C)
 in
 {
   # ── 1. 睡眠模式 ──────────────────────────────
@@ -48,23 +59,34 @@ in
     };
   };
 
-  # ── 3. 功耗墙策略与备用解锁说明 ───────────────
-  # [SV8] 用户决策（2026-10-19）：保持松下原厂 10W 保守策略，追求极致温控、静音与长续航。
-  # [ALT] 未来若需解锁 Intel 标称 15W/20W 满血性能，取消下方注释并 rebuild 即可：
-  # [RISK] 满载时底壳温度可能升至 65~70°C；详见 NOTES.md 阶段 5 记录
-  # services.throttled = {
-  #   enable = true;
-  #   extraConfig = ''
-  #     [GENERAL]
-  #     Enabled: True
-  #     [BATTERY]
-  #     PL1_Tdp_W: 15
-  #     PL2_Tdp_W: 25
-  #     Trip_Temp_C: 80
-  #     [AC]
-  #     PL1_Tdp_W: 20
-  #     PL2_Tdp_W: 40
-  #     Trip_Temp_C: 85
-  #   '';
-  # };
+  # ── 3. 功耗墙策略 (方案 A 与 方案 B 快速切换) ──
+  # [SV8] 方案 A vs 方案 B 双方案保留说明（详见 NOTES.md §7 与 prompt.md）：
+  # • 方案 A（原厂保守 10W）：极度冷凉、静音、超长续航，适合移动办公/放膝盖上
+  # • 方案 B（性能释放 20W）：插电编译加速，全核睿频 2.4~3.0GHz，适合长时间编译
+  # 可改：设置 enable = true 即为方案 B；修改为 false 即秒切回方案 A
+  # [RISK] 方案 B 满载编译时风扇会明显加速，底壳温度 55~65°C；回退办法：改 false 或选上一代
+  services.throttled = {
+    enable = true; # 可改：true (方案 B 性能) / false (方案 A 冷凉静音)
+    extraConfig = ''
+      [GENERAL]
+      Enabled: True
+      Update_Rate_s: 5
+
+      [BATTERY]
+      Update_Rate_s: 30
+      PL1_Tdp_W: ${toString batPl1}
+      PL1_Duration_s: 28
+      PL2_Tdp_W: ${toString batPl2}
+      PL2_Duration_S: 0.002
+      Trip_Temp_C: ${toString batTripTemp}
+
+      [AC]
+      Update_Rate_s: 5
+      PL1_Tdp_W: ${toString acPl1}
+      PL1_Duration_s: 28
+      PL2_Tdp_W: ${toString acPl2}
+      PL2_Duration_S: 0.002
+      Trip_Temp_C: ${toString acTripTemp}
+    '';
+  };
 }
