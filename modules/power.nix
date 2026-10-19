@@ -76,7 +76,7 @@ in
   # 可改：设置 enable = true 即为方案 B；修改为 false 即秒切回方案 A
   # [RISK] 方案 B 满载编译时风扇会明显加速，底壳温度 55~65°C；回退办法：改 false 或选上一代
   services.throttled = {
-    enable = true; # 可改：true (方案 B 性能) / false (方案 A 冷凉静音)
+    enable = false; # 可改：true (方案 B 性能) / false (方案 A 冷凉静音)
     extraConfig = ''
       [GENERAL]
       Enabled: True

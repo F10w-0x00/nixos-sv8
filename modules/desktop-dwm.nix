@@ -26,6 +26,8 @@ let
       ../pkgs/st/patches/st-scrollback-0.9.2.diff
       ../pkgs/st/patches/st-scrollback-mouse-0.9.2.diff
       ../pkgs/st/patches/st-scrollback-mouse-altscreen-20220127-2c5edf2.diff
+      ../pkgs/st/patches/st-glyph-wide-support-20220411-ef05519.diff
+      ../pkgs/st/patches/st-clickurl-0.9.3.diff
     ];
     conf = builtins.readFile ../pkgs/st/config.h;
   };
@@ -63,6 +65,11 @@ in
     enable = true;
     generateScript = true;
     extraCommands = ''
+      # 导出环境变量给 systemd 用户服务与 D-Bus（确保桌面 portal 正确感知显示环境）
+      export XDG_CURRENT_DESKTOP=dwm
+      systemctl --user import-environment DISPLAY XAUTHORITY XDG_CURRENT_DESKTOP
+      ${pkgs.dbus}/bin/dbus-update-activation-environment --systemd DISPLAY XAUTHORITY XDG_CURRENT_DESKTOP
+
       # 合并 X 资源配置（统一设置全局 144 DPI）
       echo "Xft.dpi: ${toString targetDpi}" | ${pkgs.xrdb}/bin/xrdb -merge -
 
