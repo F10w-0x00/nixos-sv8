@@ -79,12 +79,6 @@ in
       # 设定桌面壁纸（由本仓库 wallpapers/ 打包进系统，完全自包含）
       ${pkgs.feh}/bin/feh --bg-fill ${wallpaperPath} &
 
-      # 启动轻量合成器 picom，实现终端 80% (0.8) 半透明与硬件加速防撕裂
-      ${pkgs.picom}/bin/picom -b --backend glx --vsync \
-        --opacity-rule "80:class_g = 'st-256color'" \
-        --opacity-rule "80:class_g = 'st'" \
-        --opacity-rule "80:class_g = 'Alacritty'" &
-
       # 启动桌面通知服务
       ${pkgs.dunst}/bin/dunst &
 
@@ -108,16 +102,11 @@ in
   };
 
   # ── 4. 桌面合成与核心套件 ────────────────────
-  # 声明式配置 picom 合成器服务，提供窗口不透明度与渲染后端
+  # 声明式配置 picom 合成器服务，提供硬件加速与垂直同步防撕裂（100% 纯色不透明）
   services.picom = {
     enable = true;
     backend = "glx";
     vSync = true;
-    opacityRules = [
-      "80:class_g = 'st-256color'"
-      "80:class_g = 'st'"
-      "80:class_g = 'Alacritty'"
-    ];
   };
 
   # 开启 slock setuid 权限包装器，使锁屏支持验证 shadow 用户密码

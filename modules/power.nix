@@ -27,9 +27,10 @@ let
 in
 {
   # ── 1. 睡眠模式与合盖锁屏 ────────────────────
-  # [SV8] 本机经实测支持 s2idle 与 deep 两种睡眠模式（实测见 NOTES.md）
-  # 当前保持系统默认；若需要深度 S3 睡眠可开启下方选项
-  # [ALT] boot.kernelParams = [ "mem_sleep_default=deep" ];
+  # [SV8] 经现场 cat /sys/power/mem_sleep 实测，默认处于 [s2idle] deep。
+  # 强制指定内核参数为 S3 deep 深度睡眠，确保挂起时切断 CPU 与外设供电，根绝合盖偷跑电
+  # 查文档：man boot.kernelParams / man kernel-command-line
+  boot.kernelParams = [ "mem_sleep_default=deep" ];
 
   # 开启 UPower 硬件供电与电池状态守护服务
   services.upower.enable = true;
@@ -64,8 +65,10 @@ in
       SOUND_POWER_SAVE_ON_AC = 0;
       SOUND_POWER_SAVE_ON_BAT = 1;
 
-      # USB 自动挂起：为防止外接鼠标或无线接收器掉线延迟，默认关闭全局挂起
-      USB_AUTOSUSPEND = 0;
+      # USB 自动挂起：开启全局自动挂起以休眠空载的 4G 蜂窝网卡与摄像头 (Tier 1 硬件级省电)
+      # 将 2.4G 无线鼠标接收器列入黑名单（DENYLIST = 禁止自动挂起），确保外接鼠标永不休眠、0 延迟
+      USB_AUTOSUSPEND = 1;
+      USB_DENYLIST = "3151:3020";
     };
   };
 

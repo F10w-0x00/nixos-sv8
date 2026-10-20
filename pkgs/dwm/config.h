@@ -31,6 +31,9 @@ static const Rule rules[] = {
 	{ "Gimp",                     NULL,       NULL,       0,            1,           -1 },
 	{ "xdg-desktop-portal-gtk",   NULL,       NULL,       0,            1,           -1 },
 	{ "Xdg-desktop-portal-gtk",   NULL,       NULL,       0,            1,           -1 },
+	{ "mpv",                      NULL,       NULL,       0,            1,           -1 },
+	{ "clash-verge",              NULL,       NULL,       0,            1,           -1 },
+	{ "Clash-verge",              NULL,       NULL,       0,            1,           -1 },
 };
 
 /* layout(s) */
