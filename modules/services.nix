@@ -70,8 +70,7 @@
       nativeBuildInputs = [ pkgs.makeWrapper ];
       postBuild = ''
         wrapProgram $out/bin/clash-verge \
-          --set WEBKIT_DISABLE_DMABUF_RENDERER 1 \
-          --set WEBKIT_DISABLE_COMPOSITING_MODE 1
+          --set WEBKIT_DISABLE_DMABUF_RENDERER 1
       '';
     };
     tunMode = false; # 禁用 setcap 包装：serviceMode 已由 root systemd 托管，开启 tunMode 会给 GUI 加 setcap 触发 AT_SECURE 导致 WebKitGTK 沙盒白屏
