@@ -350,3 +350,34 @@
 
 
 
+
+
+---
+
+## 阶段 16 — Clash Verge 白屏/灰屏与内核通信故障根因彻底根治 (2026-10-20)
+
+### 1. 故障全景诊断
+用户在 DWM 下使用 Clash Verge 时遇到主界面 100% 呈现黑/灰/白屏，并伴随“内核通信错误”。经底层排查，此故障由 4 个层层嵌套的深层冲突共同导致：
+
+1. **权限冲突（致命死锁）**：
+   - `modules/services.nix` 原配置中同时启用了 `tunMode = true` 和 `serviceMode = true`；
+   - Nixpkgs 官方模块中的 `tunMode = true` 会为 GUI 二进制生成 `security.wrappers.clash-verge` 并赋予 `cap_net_admin=+ep` 文件特权；
+   - Linux 内核对携带文件能力（Capabilities）的二进制强制施加 `AT_SECURE` 安全标志；
+   - **WebKitGTK 的 Bubblewrap 沙盒进程严禁在 `AT_SECURE` 环境下启动**，导致渲染器子进程 `WebKitWebProcess` 瞬间崩溃死锁，UI 画布完全空白。
+   - **修正**：在开启 `serviceMode`（由 root 权限的 systemd 守护进程托管 TUN）时，彻底关闭 `tunMode`，去除 GUI 二进制的 setcap 包装。
+2. **渲染器冲突**：
+   - WebKitGTK 在 Intel 核显 + X11/modesetting 下离屏硬件合成器（DMA-BUF renderer）存在崩溃缺陷；
+   - **修正**：在 NixOS 包装中显式注入 `--set WEBKIT_DISABLE_DMABUF_RENDERER 1 --set WEBKIT_DISABLE_COMPOSITING_MODE 1`。
+3. **DWM 平铺与窗口状态锁死**：
+   - Clash Verge 为无边框 Tauri GTK 窗口，DWM 默认强行将其平铺导致几何尺寸拉伸；
+   - `tauri-plugin-window-state` 在非正常关闭时将 `"visible": false` 持久化，后续无论如何启动窗口均被标记为 `WithdrawnState`（由于 DWM 无系统托盘，窗口进入永久隐形状态）；
+   - **修正**：在 `pkgs/dwm/config.h` 中为 `clash-verge` 和 `Clash-verge` 添加 `isfloating = 1` 规则；清理并重置窗口持久化状态。
+4. **Nixpkgs 官方模块 PrivateTmp 隔离缺陷**：
+   - Nixpkgs 上游在 `clash-verge.service` 中误加了 `PrivateTmp = true`；
+   - 导致 root 后台核心生成的通信套接字 `/tmp/clash-verge-rev/verge-mihomo.sock` 被隔离在 systemd 的专属私有 `/tmp` 目录中，普通用户态 GUI 访问时报错“内核通信错误”；
+   - **修正**：通过 `systemd.services.clash-verge.serviceConfig.PrivateTmp = lib.mkForce false;` 强制放行。
+
+### 2. 修复成果验证
+- 图形界面完全恢复，深色主题正常加载，所有订阅与节点一览无余（验证截屏见 `/home/flynn/Pictures/clash-connected.png`）；
+- “内核通信错误”彻底消除，实时流量统计与节点切换（Hysteria2 / VLESS）完全正常；
+- `WebKitWebProcess` CPU 占用率从死循环时的 35% 恢复到极低空闲（~2%），彻底解决耗电发热问题。

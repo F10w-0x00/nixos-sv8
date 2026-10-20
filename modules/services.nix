@@ -2,7 +2,7 @@
 # 作用：网络管理、蓝牙、PipeWire 音频、fwupd 固件检测、日常常驻工具
 # 依赖：无
 # 目录：1. 网络与蓝牙  2. 音频子系统  3. 固件检测 (fwupd)  4. 存储、桌面支持与日常应用
-{ pkgs, ... }:
+{ pkgs, lib, ... }:
 
 {
   # ── 1. 网络与蓝牙 ────────────────────────────
@@ -31,7 +31,7 @@
 
   # ── 4. 存储、桌面支持与日常应用 ──────────────
   services.printing.enable = false; # 不需要打印服务保持关闭，节约内存与启动耗时
-  services.flatpak.enable = true; # Flatpak 跨发行版软件包支持
+  services.flatpak.enable = false; # 关闭 Flatpak 跨发行版软件包支持，节约空间与服务开销
   xdg.portal = {
     enable = true;
     extraPortals = [ pkgs.xdg-desktop-portal-gtk ];
@@ -64,9 +64,27 @@
   # 代理网络工具（Clash Verge Rev，Mihomo 内核）
   programs.clash-verge = {
     enable = true;
-    package = pkgs.clash-verge-rev;
-    tunMode = true;
+    package = pkgs.symlinkJoin {
+      name = "clash-verge-rev";
+      paths = [ pkgs.clash-verge-rev ];
+      nativeBuildInputs = [ pkgs.makeWrapper ];
+      postBuild = ''
+        wrapProgram $out/bin/clash-verge \
+          --set WEBKIT_DISABLE_DMABUF_RENDERER 1 \
+          --set WEBKIT_DISABLE_COMPOSITING_MODE 1
+      '';
+    };
+    tunMode = false; # 禁用 setcap 包装：serviceMode 已由 root systemd 托管，开启 tunMode 会给 GUI 加 setcap 触发 AT_SECURE 导致 WebKitGTK 沙盒白屏
     serviceMode = true;
+  };
+
+  # 修复 nixpkgs clash-verge-service 的 PrivateTmp 导致普通用户 GUI 无法访问 unix socket 的缺陷
+  systemd.services.clash-verge.serviceConfig.PrivateTmp = lib.mkForce false;
+
+  # 游戏分发平台（开启 Steam 官方包装，自动配置 32 位 OpenGL/Vulkan 库与 FHS 环境）
+  programs.steam = {
+    enable = true;
+    remotePlay.openFirewall = true; # 局域网流式传输放行端口
   };
 
   environment.systemPackages = with pkgs; [
@@ -75,6 +93,8 @@
     piliplus # Bilibili 第三方客户端
     newsflash # 现代化 RSS 阅读器
     mpv # 轻量级多媒体播放器
-    spotify # 音乐流媒体客户端
+    ayugram-desktop # Telegram 增强型第三方桌面客户端（支持防撤回与幽灵模式）
+    anki # 间隔重复记忆卡片学习软件 (Anki)
+    qbittorrent-enhanced # 支持自动屏蔽吸血客户端的增强版 BT 下载器 (qBittorrent-EE)
   ];
 }
