@@ -1,27 +1,22 @@
-# modules/base.nix — 基础系统与 Nix 配置
-# 作用：Nix 设置、引导加载器、时区与区域语言、用户与权限、基础 CLI 工具
-# 依赖：无
-# 目录：1. Nix 与 Flakes 设置  2. 引导加载器  3. 时区与 Locale  4. 用户与权限  5. 基础系统工具与动态链接
+# modules/base.nix — 基础系统与包管理器设置
+# 包含：Nix 设置、引导加载器、时区与区域语言、用户与基础工具
 { config, pkgs, ... }:
 
 let
-  # 引导菜单保留代数上限（按用户最新需求保留 3 代）
-  # 可改：整数值（如 3 到 10）
+  # 引导菜单保留代数上限（防止 /boot 分区被旧内核撑满）
   bootLimit = 3;
 in
 {
-  # ── 1. Nix 与 Flakes 设置 ────────────────────
-  # 首次出现的概念：experimental-features 开启 Nix 新版命令行和 Flake 声明式管理
-  # 查文档：man nix.conf / search.nixos.org 检索 nix.settings
+  # ── 1. Nix 包管理器与 Flakes ──────────────────
   nix.settings = {
     experimental-features = [
       "nix-command"
       "flakes"
     ];
-    auto-optimise-store = true; # 自动硬链接重复文件以节省 SSD 空间
+    auto-optimise-store = true; # 自动硬链接重复文件以节省磁盘空间
   };
 
-  # 自动垃圾回收策略：每 7 天自动清理超过 7 天的旧包与缓存
+  # 定期自动清理超过 7 天的旧包与构建缓存
   nix.gc = {
     automatic = true;
     dates = "weekly";
@@ -32,14 +27,14 @@ in
   boot.loader = {
     systemd-boot = {
       enable = true;
-      configurationLimit = bootLimit; # [SV8] 防止 1GB /boot 分区被多代旧内核撑爆
+      configurationLimit = bootLimit;
     };
-    efi.canTouchEfiVariables = true; # 允许向主板 NVRAM 注册 UEFI 启动项
+    efi.canTouchEfiVariables = true; # 允许向主板 NVRAM 注册启动项
   };
 
-  # ── 3. 时区与 Locale ─────────────────────────
-  time.timeZone = "Asia/Shanghai"; # [SV8] 经 timedatectl 核实为当前时区
-  i18n.defaultLocale = "en_US.UTF-8"; # 系统消息与终端默认保持英文以防乱码
+  # ── 3. 时区与语言环境 ────────────────────────
+  time.timeZone = "Asia/Shanghai";
+  i18n.defaultLocale = "en_US.UTF-8";
   i18n.extraLocaleSettings = {
     LC_ADDRESS = "zh_CN.UTF-8";
     LC_IDENTIFICATION = "zh_CN.UTF-8";
@@ -61,17 +56,17 @@ in
       "wheel"
       "video"
       "audio"
-    ]; # 授予网络配置与提权权限
+    ];
     packages = with pkgs; [
       vim
       kdePackages.kate
     ];
   };
 
-  # ── 5. 基础系统工具与动态链接 ────────────────
-  nixpkgs.config.allowUnfree = true; # 允许安装专有软件（如 VS Code、微码等）
+  # ── 5. 开发工具与运行时环境 ──────────────────
+  nixpkgs.config.allowUnfree = true; # 允许安装专有软件（如 VS Code、Intel 固件等）
 
-  # 允许运行非 Nix 预编译的动态链接二进制（如 VS Code Server 等）
+  # 支持直接运行未针对 Nix 打包的动态链接二进制程序
   programs.nix-ld = {
     enable = true;
     libraries = with pkgs; [
@@ -82,18 +77,18 @@ in
     ];
   };
 
-  environment.localBinInPath = true; # 将 ~/.local/bin 自动加入 PATH 环境变量
+  environment.localBinInPath = true; # 将 ~/.local/bin 自动加入 PATH
 
-  # Git 版本控制基础支持
+  # 基础版本控制
   programs.git.enable = true;
 
-  # 按项目轻量级环境自动加载（direnv + nix-direnv，支持 nix shell / nix develop 自动化）
+  # 开发目录环境自动化加载（支持 nix-shell / nix develop 自动生效）
   programs.direnv = {
     enable = true;
     nix-direnv.enable = true;
   };
 
-  # 系统级基础排障与维护工具
+  # 系统常用维护与开发工具
   environment.systemPackages = with pkgs; [
     vim
     wget

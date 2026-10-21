@@ -1,0 +1,114 @@
+{
+  "$schema": "https://github.com/fastfetch-cli/fastfetch/raw/dev/doc/json_schema.json",
+  "logo": {
+    "type": "auto",
+    "padding": {
+      "top": 1,
+      "left": 2,
+      "right": 3
+    }
+  },
+  "display": {
+    "separator": " ⇢  "
+  },
+  "modules": [
+    // ----------------- 1. 发行版信息 -----------------
+    {
+      "type": "os",
+      "key": "󱄅 DISTRO",
+      "keyColor": "cyan"
+    },
+    {
+      "type": "kernel",
+      "key": "├── ",
+      "keyColor": "cyan"
+    },
+    {
+      "type": "packages",
+      "key": "├── 󰏖",
+      "keyColor": "cyan"
+    },
+    {
+      "type": "command",
+      "key": "├── 󰔛",
+      "keyColor": "cyan",
+      "text": "d=$(( ($(date +%s) - $(date -d $(date -d @$(stat -c %W /lost+found 2>/dev/null || echo 1792245946) +%Y-%m-%d) +%s)) / 86400 )); echo \"$d day$([ $d -ne 1 ] && echo s)\""
+    },
+    {
+      "type": "shell",
+      "key": "└── ",
+      "keyColor": "cyan"
+    },
+
+    // ----------------- 2. 桌面与环境 -----------------
+    {
+      "type": "wm",
+      "key": " DE/WM",
+      "keyColor": "yellow"
+    },
+    {
+      "type": "theme",
+      "key": "├── 󰒓",
+      "keyColor": "yellow"
+    },
+    {
+      "type": "icons",
+      "key": "├── 󰆿",
+      "keyColor": "yellow"
+    },
+    {
+      "type": "font",
+      "key": "├── 󰬚",
+      "keyColor": "yellow"
+    },
+    {
+      "type": "terminal",
+      "key": "└── 󰞷",
+      "keyColor": "yellow"
+    },
+
+    // ----------------- 3. 硬件规格 -----------------
+    {
+      "type": "host",
+      "key": "󰌢 SYSTEM",
+      "keyColor": "green"
+    },
+    {
+      "type": "cpu",
+      "key": "├── 󰍛",
+      "keyColor": "green"
+    },
+    {
+      "type": "gpu",
+      "key": "├── 󰢮",
+      "keyColor": "green"
+    },
+    {
+      "type": "display",
+      "key": "├── 󰍹",
+      "keyColor": "green"
+    },
+    {
+      "type": "memory",
+      "key": "├── 󰘚",
+      "keyColor": "green"
+    },
+    {
+      "type": "disk",
+      "key": "├── 󰋊",
+      "keyColor": "green"
+    },
+    {
+      "type": "battery",
+      "key": "└── 󰥔",
+      "keyColor": "green"
+    },
+
+    // ----------------- 4. 音频输出 -----------------
+    {
+      "type": "sound",
+      "key": "󰕾 AUDIO",
+      "keyColor": "magenta"
+    }
+  ]
+}

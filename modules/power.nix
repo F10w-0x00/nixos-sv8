@@ -1,85 +1,69 @@
 # modules/power.nix — 电源管理与功耗释放策略
-# 作用：TLP 能效调度、睡眠模式基线、throttled 功耗墙调优与编译性能释放
-# 依赖：无
-# 目录：1. 睡眠模式与合盖锁屏  2. TLP 电源管理策略  3. 功耗墙策略 (方案 A 与 方案 B 快速切换)
+# 包含：深度睡眠、TLP 能效调度、功耗墙双方案（方案 A 10W 冷凉静音 / 方案 B 20W 满血性能）
 { ... }:
 
 let
-  # ── 能效与功耗调优参数区 ────────────────────────
-  # EPP 能效偏好：插电时 balance_performance，电池时 balance_power
+  # ── 功耗调优与释放参数 ────────────────────────
+  # EPP 能效策略：插电时偏重性能，电池时偏重续航
   eppOnAc = "balance_performance";
   eppOnBat = "balance_power";
 
-  # CPU 调频策略（Intel P-state 驱动标准 governor 为 powersave，实际频率由 EPP 动态调控）
   governorOnAc = "powersave";
   governorOnBat = "powersave";
 
-  # throttled 功耗释放参数 (针对 Core i7-8665U 编译性能优化)
-  # [SV8] 针对插电 (AC) 编译场景：解开 10W 原厂钳制至 20W (Intel ARK 标称 15W，cTDP-up 为 25W)
-  acPl1 = 20; # AC 持续功耗 (W)
-  acPl2 = 40; # AC 短时爆发功耗 (W)
-  acTripTemp = 85; # AC 核心温度保护墙 (°C)
+  # 方案 B 满血功耗墙参数 (针对 Core i7-8665U 编译加速)
+  acPl1 = 20; # 插电持续功耗 (W)
+  acPl2 = 40; # 插电短时爆发功耗 (W)
+  acTripTemp = 85; # 插电温控上限 (°C)
 
-  # [SV8] 针对电池 (BAT) 场景：保持 15W 标称功耗，兼顾移动办公续航
   batPl1 = 15; # 电池持续功耗 (W)
   batPl2 = 25; # 电池短时爆发功耗 (W)
-  batTripTemp = 80; # 电池核心温度保护墙 (°C)
+  batTripTemp = 80; # 电池温控上限 (°C)
 in
 {
-  # ── 1. 睡眠模式与合盖锁屏 ────────────────────
-  # [SV8] 经现场 cat /sys/power/mem_sleep 实测，默认处于 [s2idle] deep。
-  # 强制指定内核参数为 S3 deep 深度睡眠，确保挂起时切断 CPU 与外设供电，根绝合盖偷跑电
-  # 查文档：man boot.kernelParams / man kernel-command-line
+  # ── 1. 深度睡眠与电源事件 ────────────────────
+  # 强制使用 S3 deep 深度睡眠，杜绝休眠偷跑电
   boot.kernelParams = [ "mem_sleep_default=deep" ];
 
-  # 开启 UPower 硬件供电与电池状态守护服务
   services.upower.enable = true;
 
-  # 合盖与电源键行为：统一为挂起睡眠（由 xss-lock 自动联动 slock 锁屏保护隐私）
+  # 合盖与轻按电源键行为：统一挂起睡眠（由 xss-lock 自动联动 slock 锁屏）
   services.logind.settings.Login = {
     HandleLidSwitch = "suspend";
     HandleLidSwitchExternalPower = "suspend";
     HandlePowerKey = "suspend";
   };
 
-  # ── 2. TLP 电源管理策略 ───────────────────────
-  # [SV8] 启用 TLP 高级电源管理，关闭互斥的 power-profiles-daemon
+  # ── 2. TLP 能效调度 ──────────────────────────
   services.tlp = {
     enable = true;
     settings = {
-      # CPU 调频与 EPP 能效配置
       CPU_SCALING_GOVERNOR_ON_AC = governorOnAc;
       CPU_SCALING_GOVERNOR_ON_BAT = governorOnBat;
       CPU_ENERGY_PERF_POLICY_ON_AC = eppOnAc;
       CPU_ENERGY_PERF_POLICY_ON_BAT = eppOnBat;
 
-      # PCIe 活动状态电源管理 (ASPM)
       PCIE_ASPM_ON_AC = "default";
       PCIE_ASPM_ON_BAT = "powersupersave";
 
-      # Wi-Fi 节能模式
       WIFI_PWR_ON_AC = "off";
       WIFI_PWR_ON_BAT = "on";
 
-      # 声卡省电超时（秒）
       SOUND_POWER_SAVE_ON_AC = 0;
       SOUND_POWER_SAVE_ON_BAT = 1;
 
-      # USB 自动挂起：开启全局自动挂起以休眠空载的 4G 蜂窝网卡与摄像头 (Tier 1 硬件级省电)
-      # 将 2.4G 无线鼠标接收器列入黑名单（DENYLIST = 禁止自动挂起），确保外接鼠标永不休眠、0 延迟
+      # USB 全局自动挂起（外接 2.4G 鼠标接收器加入白名单，防止误休眠产生延迟）
       USB_AUTOSUSPEND = 1;
       USB_DENYLIST = "3151:3020";
     };
   };
 
-  # ── 3. 功耗墙策略 (方案 A 与 方案 B 快速切换) ──
-  # [SV8] 方案 A vs 方案 B 双方案保留说明（详见 NOTES.md §7 与 prompt.md）：
-  # • 方案 A（原厂保守 10W）：极度冷凉、静音、超长续航，适合移动办公/放膝盖上
-  # • 方案 B（性能释放 20W）：插电编译加速，全核睿频 2.4~3.0GHz，适合长时间编译
-  # 可改：设置 enable = true 即为方案 B；修改为 false 即秒切回方案 A
-  # [RISK] 方案 B 满载编译时风扇会明显加速，底壳温度 55~65°C；回退办法：改 false 或选上一代
+  # ── 3. 功耗墙调度 (throttled) ────────────────
+  # 功耗方案切换：
+  # • enable = false：方案 A（原厂 10W），极度冷凉静音，超长续航
+  # • enable = true ：方案 B（释放 20W），全核高频加速，适合大型项目编译
   services.throttled = {
-    enable = false; # 可改：true (方案 B 性能) / false (方案 A 冷凉静音)
+    enable = false;
     extraConfig = ''
       [GENERAL]
       Enabled: True

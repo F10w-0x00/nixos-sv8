@@ -47,12 +47,12 @@
 - **厂商**：Panasonic Corporation
 - **产品名**：CFSV8-2
 - **SKU**：`CF-SV8SFKVS`
-- **序列号**：`9JKSC52065`
+- **序列号**：`[Sanitized]`
 - **BIOS 版本**：`V2.00L12` (发布日期：2019-06-27)
 - **固件类型**：UEFI 2.70 (AMI)
 
-### 6. 历史配置备份
-- 原 `/etc/nixos/configuration.nix` 与 `hardware-configuration.nix` 已备份至 `legacy/` 目录。
+### 6. 历史配置迁移
+- 原 `/etc/nixos/` 历史安装配置已完整解构并迁移至模块化架构，原稿由 Git 提交历史归档保存。
 
 ### 7. 阶段 0 决策结论 (与用户确认)
 1. **用户名**：`flynn`（沿用）
