@@ -57,24 +57,24 @@
     openFirewall = true;
   };
 
-  # ── 5. 网络代理 (Clash Verge Rev) ─────────────
-  programs.clash-verge = {
-    enable = true;
-    package = pkgs.symlinkJoin {
-      name = "clash-verge-rev";
-      paths = [ pkgs.clash-verge-rev ];
-      nativeBuildInputs = [ pkgs.makeWrapper ];
-      postBuild = ''
-        wrapProgram $out/bin/clash-verge \
-          --set WEBKIT_DISABLE_DMABUF_RENDERER 1
-      '';
-    };
-    tunMode = false; # 禁用 GUI setcap 包装，避免触发 AT_SECURE 导致 WebKitGTK 沙盒白屏
-    serviceMode = true; # 由 root systemd 服务安全托管 TUN 模式
-  };
+  # ── 5. 网络代理 (Clash Verge Rev，按需开启) ─────────
+  # programs.clash-verge = {
+  #   enable = true;
+  #   package = pkgs.symlinkJoin {
+  #     name = "clash-verge-rev";
+  #     paths = [ pkgs.clash-verge-rev ];
+  #     nativeBuildInputs = [ pkgs.makeWrapper ];
+  #     postBuild = ''
+  #       wrapProgram $out/bin/clash-verge \
+  #         --set WEBKIT_DISABLE_DMABUF_RENDERER 1
+  #     '';
+  #   };
+  #   tunMode = false; # 禁用 GUI setcap 包装，避免触发 AT_SECURE 导致 WebKitGTK 沙盒白屏
+  #   serviceMode = true; # 由 root systemd 服务安全托管 TUN 模式
+  # };
 
   # 允许普通用户态 GUI 访问后台守护进程的套接字通信
-  systemd.services.clash-verge.serviceConfig.PrivateTmp = lib.mkForce false;
+  # systemd.services.clash-verge.serviceConfig.PrivateTmp = lib.mkForce false;
 
   # ── 6. 游戏与日常桌面套件 ────────────────────
   programs.steam = {
