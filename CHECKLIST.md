@@ -3,7 +3,7 @@
 ## 阶段 0 — 盘点与提问（只读，不改任何东西）
 - [x] 运行并把结果存入 `NOTES.md` 的「硬件盘点」：`nixos-version`、`uname -r`、`lscpu`、`lspci -nnk`、`lsusb`、`sudo dmidecode -t system -t bios`、`lsblk -f`、`free -h`、`ls /sys/class/power_supply`、`cat /sys/power/mem_sleep`、`bootctl status`、`ls /etc/nixos`、`nmcli device`、`rfkill list`
 - [x] 判断是否存在：指纹、红外/人脸相机、WWAN、Thunderbolt、SD 读卡器；内存 8/16GB；SSD 是 SATA 还是 NVMe
-- [x] 备份当前 `configuration.nix`（放仓库 `legacy/`），不删除
+- [x] 备份并解构当前 `configuration.nix`，完整迁移至模块化架构并由 Git 历史归档
 - [x] 向我提问（附默认值）：用户名 / 主机名（默认沿用）、是否用 flakes（默认是）、nixpkgs 分支（默认沿用当前稳定版）、是否用 home-manager（默认不用，先系统级）、物理键盘 JIS/US、时区（先用 `timedatectl` 查当前值）、输入法（默认中文拼音，日语可选）、续航 vs 性能偏好（默认续航优先）、是否需要休眠（默认不要）、登录方式（默认 tty 自动登录 + startx，备选 lightdm / ly）
 
 ## 阶段 1 — 仓库与基线

@@ -37,7 +37,8 @@
 ├── CHECKLIST.md                       # 各阶段任务执行活副本（全项已验证）
 ├── NOTES.md                           # 硬件全功能对照表、实测数据、决策记录与原理解析
 ├── wallpapers/                        # 桌面壁纸资源目录（仓库自包含，随构建打包进系统）
-├── legacy/                            # 迁移前原厂历史配置备份 (/etc/nixos)
+├── dotfiles/                          # 用户级应用核心配置 (Fastfetch, Alacritty, VS Code, mpv)
+├── scripts/                           # 辅助脚本（标准化电池放电功率中位数采样）
 ├── hosts/
 │   └── sv8/
 │       ├── default.nix                # 主机模块入口、主机名与系统状态版本
