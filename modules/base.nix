@@ -57,10 +57,6 @@ in
       "video"
       "audio"
     ];
-    packages = with pkgs; [
-      vim
-      kdePackages.kate
-    ];
   };
 
   # ── 5. 开发工具与运行时环境 ──────────────────
