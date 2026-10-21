@@ -162,22 +162,48 @@ sudo nix-store --optimise
 
 ---
 
-## 新机或系统重装时如何恢复
+## 新机安装与跨机器复现指南
 
-若需要将本配置恢复到新安装的 SV8 或重装的 NixOS 系统上：
+本配置基于纯函数式 Nix Flake 构建，通过 `flake.lock` 严格锁定了全部软件包哈希，具备 **100% 确定性复现能力**。
+
+### 场景 A：在另一台松下 CF-SV 系列或重装本机时（零硬件改动）
+
+只需关注**新磁盘的分区 UUID**：
 
 1. **克隆配置仓库**：
    ```bash
    git clone <本仓库地址> ~/nixos-config
+   cd ~/nixos-config
    ```
-2. **确认硬件配置差异**：
-   新机安装时若磁盘 UUID 变化，运行 `nixos-generate-config --dir /tmp/hardware`，比对并替换 `hosts/sv8/hardware-configuration.nix` 中的文件系统 UUID。
-3. **一键构建并切换**：
+2. **更新新机器的磁盘硬件配置**：
    ```bash
-   sudo nixos-rebuild switch --flake ~/nixos-config#sv8
+   # 生成当前新机器的实际磁盘 UUID 与分区映射
+   nixos-generate-config --show-hardware-config > hosts/sv8/hardware-configuration.nix
    ```
-4. **重启系统**：
-   重启后 tty1 自动登录并启动 DWM 桌面，所有触摸板圆形滚动、快捷键与功耗策略完整复原。
+3. **一键构建并应用系统**：
+   ```bash
+   sudo nixos-rebuild switch --flake .#sv8
+   ```
+4. **设置用户登录密码**（首装必需）：
+   ```bash
+   sudo passwd flynn
+   ```
+5. **重启生效**：
+   系统开机自动以 tty1 登录并拉起 DWM 桌面，壁纸、字体、终端回滚补丁、松下圆盘旋转滚动均 100% 还原。
+
+---
+
+### 场景 B：迁移到非松下设备（如 ThinkPad、通用 PC 或虚拟机）
+
+若迁移到非 CF-SV8 的其它设备，只需检查以下 3 处硬件差异：
+
+1. **触摸板驱动**（[modules/input.nix](modules/input.nix)）：
+   - 非松下电脑无物理圆盘，将 `services.libinput.enable = false;` 改为 `true`，并关闭 `services.xserver.synaptics`。
+2. **显卡驱动**（[modules/graphics.nix](modules/graphics.nix)）：
+   - 若非 Intel 核显（如 AMD Radeon 或 Nvidia），将 `intel-media-driver` 替换为对应显卡驱动，并移除 `boot.kernelParams = [ "i915.enable_psr=0" ]`。
+3. **电池与电源策略**（[modules/power.nix](modules/power.nix) 与 [pkgs/slstatus/config.h](pkgs/slstatus/config.h)）：
+   - 非松下笔记本电池接口通常为 `BAT0`（松下为 `BAT1`），如需状态栏显示电量，在 `slstatus/config.h` 中将 `BAT1` 改为 `BAT0`。
+   - `modules/power.nix` 中的 `throttled` 为 Intel 专有工具，非 Intel 平台请保持 `enable = false`。
 
 ---
 
