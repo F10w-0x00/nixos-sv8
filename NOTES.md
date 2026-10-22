@@ -446,15 +446,22 @@ Zathura 采用极简设计，基于轻量快速的 MuPDF 渲染后端，配合�
 | `fileSystems`, `swapDevices`, `initrd` 驱动模块 | `hosts/sv8/hardware-configuration.nix` | `hosts/sv8/hardware-configuration.nix` | 主机底层硬件固有分区与驱动，属于主机层 |
 | `networking.hostName`, `system.stateVersion` | `hosts/sv8/default.nix` | `hosts/sv8/default.nix` | 主机标识层固有参数 |
 
-### 4. 任务 B：macOS 光标多层适配与排查表
+### 4. 任务 B：光标主题调优与延迟根治记录
 
-在 X11 + DWM 极简窗口管理器环境下，无统一桌面环境（GNOME/KDE）的后台守护，光标样式依赖 3 个层级协同生效：
+- **初版体验反馈**：初版引入 `apple-cursor` (macOS 32px) 后，用户实机反馈鼠标在移动到超链接时有明显的“阻滞感/粘滞感”。
+- **深层根因溯源**：
+  1. `apple-cursor` 单个 `pointer` 文件高达 173.5 KB，内置 10 种分辨率多层位图，X11 每次跨越链接均触发显存位图重载，产生微卡顿；
+  2. 箭头光标（左上角）与手型光标（中心食指）热点与视觉重心位移较大，视觉产生被“吸附”假象；
+  3. Firefox 默认使用传统 X11 事件流，DOM hover 与光标切换串行阻塞。
+- **最终演进决策 (方案 C + 异步事件流)**：
+  1. `modules/appearance.nix`：切换回 Linux 原生经典低延迟 `Adwaita`（24px，来自 `adwaita-icon-theme`），位图轻量无解码负担，热点精准；
+  2. `modules/services.nix`：注入 `MOZ_USE_XINPUT2 = "1";`，开启异步高精度事件流，彻底消除链接跨越事件阻塞。
 
-| 适配层级 | 涉及配置文件 | 生效目标程序 | 异常现象与排查方法 |
+| 适配层级 | 涉及配置文件 | 生效目标程序 | 验证方法与标准输出 |
 | :--- | :--- | :--- | :--- |
-| **X11 资源数据库 (xrdb)** | `modules/appearance.nix` §3 (`Xcursor.theme` / `Xcursor.size`) | DWM 根窗口、st、dmenu、slock 等原生 X11 程序 | 若根窗口光标变为黑粗十字，检查 `xrdb -query \| grep -i xcursor`，并确认 `startx` 执行了 `xsetroot -cursor_name left_ptr` |
-| **全局环境变量 (XCURSOR_*)** | `modules/appearance.nix` §2 (`XCURSOR_THEME` / `XCURSOR_SIZE`) | Alacritty、VS Code (Electron)、Qt、Steam | 若终端或代码编辑器光标大小不匹配，检查 `echo $XCURSOR_THEME $XCURSOR_SIZE` 是否输出 `macOS 32` |
-| **GTK 3/4 设置 (settings.ini)** | `/etc/xdg/gtk-3.0/settings.ini`、`gtk-4.0` 与 `~/.config/gtk-*/settings.ini` | Firefox、PCManFM、Clash Verge (WebKitGTK) | 若浏览器内指针变成旧主题，检查用户级 `~/.config/gtk-3.0/settings.ini` 是否覆盖了系统级，并核查 `gtk-cursor-theme-name=macOS` |
+| **X11 资源数据库 (xrdb)** | `modules/appearance.nix` §3 (`Xcursor.theme` / `Xcursor.size`) | DWM 根窗口、dmenu、slock 等原生 X11 程序 | `xrdb -query \| grep -i xcursor` 显示 `Xcursor.theme: Adwaita` / `size: 24` |
+| **全局环境变量 (XCURSOR_*)** | `modules/appearance.nix` §2 (`XCURSOR_THEME` / `XCURSOR_SIZE`) | Alacritty、VS Code (Electron)、Qt | `echo $XCURSOR_THEME $XCURSOR_SIZE` 输出 `Adwaita 24` |
+| **GTK 3/4 设置 (settings.ini)** | `/etc/xdg/gtk-3.0/settings.ini` 与 `gtk-4.0` | Firefox、PCManFM、Clash Verge (WebKitGTK) | `gtk-cursor-theme-name=Adwaita`、`gtk-cursor-theme-size=24` |
 
 ### 5. eMudhra (emSign) 中间 CA 私钥泄露事故处置 (2026-10)
 

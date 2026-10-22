@@ -83,7 +83,7 @@
 | **内置光驱与 DVD 刻录** | `hosts/sv8/sv8.nix` | §7. 内置光驱与免提权刻录工具集 (`dvdplusrwtools` / `xorriso`)，指南见 [docs/DVD-BURNING.md](docs/DVD-BURNING.md) [这条属于 sv8.nix] |
 | **合盖睡眠与电源键行为** | `modules/power.nix` | §1. 睡眠模式与合盖锁屏 (`services.logind`) |
 | **USB 供电与外设防休眠** | `modules/power.nix` | §3. 内核级与 Udev 物理锁 (`usbcore.autosuspend=-1`) |
-| **鼠标指针主题与尺寸** | `modules/appearance.nix` | §1~§3 (`cursorTheme = "macOS"`, `cursorSize = 32`) |
+| **鼠标指针主题与尺寸** | `modules/appearance.nix` | §1~§3 (`cursorTheme = "Adwaita"`, `cursorSize = 24`) |
 | **桌面壁纸图片** | `wallpapers/` 目录 | 替换图片或修改 `modules/desktop-dwm.nix` 的 `wallpaperPath` |
 | **DWM 快捷键、窗口排版** | `pkgs/dwm/config.h` | `keys[]` 数组定义 |
 | **终端模拟器 (Alacritty) 字体/字号/边距** | `~/.config/alacritty.toml` | `[font]` 与 `[window.padding]`（热加载免编译） |

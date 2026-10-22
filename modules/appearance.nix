@@ -1,5 +1,5 @@
 # modules/appearance.nix — 全局桌面外观与光标主题定制
-# 包含：macOS 风格光标主题 (apple-cursor)、X11/XRDB、全局环境变量与 GTK 3/4 样式统一
+# 包含：原生低延迟 Adwaita 光标主题、X11/XRDB、全局环境变量与 GTK 3/4 样式统一
 {
   config,
   lib,
@@ -8,30 +8,17 @@
 }:
 
 let
-  # 光标主题名称（由 apple-cursor 包提供）
-  # 可选："macOS"（经典黑色，默认推荐）或 "macOS-White"（白色高对比度）
-  cursorTheme = "macOS";
+  # 经典轻量原生低延迟光标主题（Adwaita）
+  # 彻底杜绝第三方大尺寸光标在链接切换时的位图解码开销与热点突变阻滞感
+  cursorTheme = "Adwaita";
 
-  # 光标像素尺寸（可改：24 / 28 / 32 / 40 / 48）
-  # 算法推导：基础 24px * 缩放倍率 (144/96 = 1.5x) 为 36px，选取主题支持的最佳预渲染物理尺寸 32px
-  cursorSize =
-    let
-      targetDpi = if config.services.xserver.dpi != null then config.services.xserver.dpi else 96;
-    in
-    if targetDpi >= 192 then
-      48
-    else if targetDpi >= 144 then
-      32
-    else if targetDpi >= 120 then
-      28
-    else
-      24;
+  # 标准物理光标尺寸（24px，热点精准，零渲染负担）
+  cursorSize = 24;
 in
 {
   # ── 1. 光标主题软件包与系统图标资源链接 ─────────
-  # 安装开源 macOS 风格光标 (ful1e5/apple_cursor)
   environment.systemPackages = with pkgs; [
-    apple-cursor
+    adwaita-icon-theme
   ];
 
   # 确保 X11 / 图标主题目录自动符号链接至 /run/current-system/sw/share/icons

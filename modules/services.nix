@@ -50,6 +50,7 @@
   environment.sessionVariables = {
     BROWSER = "firefox";
     TERMINAL = "alacritty";
+    MOZ_USE_XINPUT2 = "1"; # 启用 XInput2 高精度事件流，彻底消除浏览器中鼠标划过超链接时的事件阻塞与阻滞感
   };
 
   # 局域网跨设备互传工具
