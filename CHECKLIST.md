@@ -86,3 +86,42 @@
 - [x] 用户级配置 (`~/.config`) 现状与管理方案调研分析，在 `NOTES.md` 中完整记录归档，待后续学习 Home-Manager 后权衡决策
 - [x] 用户执行 `nixos-rebuild switch` 固化为全新稳定代数 Generation 26
 - [x] 代码归档与 Git 提交，发布版本标签 `v1.1`
+
+## 阶段 10 — 拆分 sv8.nix / macOS 光标 / DVD+R 刻录
+
+### 第零部分：永久规则
+- [ ] **H0 机器分层规则**：CF-SV8 本机特有配置只能写在 `hosts/sv8/sv8.nix`，其余通用项放 `modules/`；每次新增配置前自问并在 `NOTES.md` 记录归类理由；`modules/` 与 `pkgs/` 不得出现本机值；本机相关说明明确标明「这条属于 sv8.nix」
+
+### 第一部分：Review 结论
+- [ ] R1 / R2 / R4 / R6：作为本清单内任务直接执行
+- [ ] R3?（Clash Verge 服务模式与按需）、R5?（防火墙开放端口）、R7?（全局工具链纯净性）提问用户并等待确认
+- [ ] R8（电源与运行时 PM 待办）、R9（公开仓库壁纸版权）记入 `NOTES.md` 待办
+- [ ] R10：实测后将 `NOTES.md` 光驱型号更正为确切参数
+
+### 第二部分：任务 A —— 拆出 sv8.nix（先做，单独一次 rebuild）
+- [ ] A1：编制覆盖全部 `.nix` 与 `pkgs/` 的完整归类表，写入 `NOTES.md`「阶段 10」并等待用户确认
+- [ ] A2：新增 `modules/default.nix` 汇总所有通用模块，简化 `hosts/sv8/default.nix`
+- [ ] A3：编写 `hosts/sv8/sv8.nix`（≤ 150 行，分节清晰，每条标注 `[SV8]` 与理由）
+- [ ] A4：让通用模块可被覆盖（`services.xserver.dpi` 覆盖 DPI；`my.batteryName` 结合 `replaceVars` 模板化 slstatus 电池名）
+- [ ] A5：清理与自查（删除 `modules/hardware-sv8.nix`，`zramSwap`/`fstrim` 并入 `base.nix`；全局搜索本机值；跑 `nixfmt`；删除 `desktop-dwm.nix` 中重复的 `picom`）
+- [ ] A6：静态重构等价性验证（对比重构前后 `drvPath`，仅允许列表顺序差异；抽查关键内核参数与配置；生成「请你执行」供用户 `test` 并只读复测）
+- [ ] A7：新电脑接入落地（创建 `hosts/template/default.nix`，占位 stub 独立求值验证无本机项污染；更新 `README.md` 5 步接入指南与速查表）
+- [ ] A8：Git 提交与打标（重构前 `git tag pre-refactor`，完成后 `git tag sv8nix-split`）
+
+### 第三部分：任务 B —— macOS 样式光标（任务 A 之后，独立一次 rebuild）
+- [ ] B1：确认选包 `apple-cursor` 并核实主题目录名
+- [ ] B2：新建 `modules/appearance.nix`，配置多层光标（`environment.variables`、xrdb、GTK 3/4 settings.ini、尺寸 32/推导）
+- [ ] B3：用户 rebuild 并重启 X 会话后，执行只读命令检查并在 `NOTES.md` 建立「光标排查表」
+- [ ] B4：完善注释（首次出现的概念配说明）与回滚指南
+
+### 第四部分：任务 C —— DVD+R 刻录（任务 B 之后）
+- [ ] C0：严格坚守红线（绝不向光盘写数据，全流程普通用户，禁止 agent 写入调用）
+- [ ] C1：只读查询光驱硬件参数与状态，更新 `NOTES.md` 确切型号与能力（R10）
+- [ ] C2：在 `sv8.nix` §光驱 增加 `dvdplusrwtools` 与 `xorriso`，核查用户设备 ACL 权限与挂起抑制防废盘
+- [ ] C3：编写 `docs/DVD-BURNING.md` 教程并同步 README 速查表
+- [ ] C4：用户试刻完成后，在 `NOTES.md` 记录实测验收数据
+
+### 第五部分：执行顺序与完成定义严格把关
+- [ ] 执行顺序：A（拆分）→ 用户 rebuild 验证 → B（光标）→ 用户 rebuild 验证 → C（光驱工具）→ 用户 rebuild → 用户刻录
+- [ ] 最终状态归档：所有项均为已验证、不可用（有证据）或用户决定跳过
+

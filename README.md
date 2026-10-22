@@ -9,14 +9,14 @@
 如果你第一次接手或修改本仓库，请按以下顺序阅读：
 
 ### 1. 先看哪几个文件？
-1. **[modules/desktop-dwm.nix](modules/desktop-dwm.nix) 与 [pkgs/dwm/config.h](pkgs/dwm/config.h)**：
-   - 负责 DWM 窗口管理器、快捷键、字体字号 (11pt)、144 DPI (1.5x 缩放)、壁纸自包含加载、锁屏 (`slock`) 与终端半透明 (`picom`)。
-2. **[modules/power.nix](modules/power.nix)**：
-   - 负责电源与能效调度。固化原厂 10W 冷凉静音策略，结合 TLP 能效调度与 S3 深度睡眠，整机待机功耗低至 ~5.15W，兼顾极致低温与长续航。
-3. **[modules/input.nix](modules/input.nix)**：
-   - 负责标准美式 US 键盘与松下经典圆形触控板驱动（`xf86-input-synaptics`），包含圆盘边缘旋转滚动（くるくるスクロール）核心参数。
+1. **[hosts/sv8/sv8.nix](hosts/sv8/sv8.nix)**：
+   - 唯一的 CF-SV8 本机特有配置：包含松下圆盘触摸板驱动与滚动灵敏度、S3 深度睡眠、144 DPI、Intel 核显硬件加速、防闪屏补丁与电池节点名。
+2. **[modules/desktop-dwm.nix](modules/desktop-dwm.nix) 与 [pkgs/dwm/config.h](pkgs/dwm/config.h)**：
+   - 通用平铺桌面：负责 DWM 窗口管理器、快捷键、字体字号 (11pt)、壁纸自包含加载、锁屏 (`slock`) 与终端半透明 (`picom`)。
+3. **[modules/power.nix](modules/power.nix)**：
+   - 通用电源管理：固化原厂 10W 冷凉静音策略，结合 TLP 能效调度与 UPower，整机待机功耗低至 ~5.15W，兼顾极致低温与长续航。
 4. **[modules/services.nix](modules/services.nix) 与 [modules/base.nix](modules/base.nix)**：
-   - 负责网络、音频、PCManFM 文件管理、Zathura PDF 查看器、Git 以及按项目轻量加载环境的 `direnv`。
+   - 通用系统服务与开发环境：负责网络、音频、PCManFM 文件管理、Zathura PDF 查看器、Git 以及按项目轻量加载环境的 `direnv`。
 
 ### 2. 最容易改错的 3 个地方（避坑指南）
 1. **修改 DWM / st 源码后忘记 rebuild 或误加进 packages**：
@@ -24,7 +24,7 @@
 2. **新增文件未执行 `git add`**：
    - Nix Flake 具有极高的严谨性，仅能感知被 Git 跟踪的文件。若在仓库中新增了模块、补丁或图片，**必须先运行 `git add <新文件>`**，否则 rebuild 时会直接报错找不到该文件。
 3. **触控板驱动冲突**：
-   - 松下独有的圆盘边缘顺畅滚动完全依赖 `xf86-input-synaptics`。`services.libinput.enable` **必须严格保持为 `false`**。若不慎开启了 libinput，两者会抢占触摸板导致圆周旋转滚动完全失效。
+   - 松下独有的圆盘边缘顺畅滚动完全依赖 `xf86-input-synaptics`。`hosts/sv8/sv8.nix` 中 `services.libinput.enable` **必须严格保持为 `false`**。若不慎开启了 libinput，两者会抢占触摸板导致圆周旋转滚动完全失效。
 
 ---
 
@@ -32,7 +32,7 @@
 
 ```
 ~/nixos-config
-├── flake.nix / flake.lock            # Flake 入口与依赖锁文件
+├── flake.nix / flake.lock            # Flake 入口（导出 sv8 与 template 主机）与依赖锁文件
 ├── README.md                          # 本说明文档、改配置速查表、回滚指南、5分钟导览
 ├── CHECKLIST.md                       # 各阶段任务执行活副本（全项已验证）
 ├── NOTES.md                           # 硬件全功能对照表、实测数据、决策记录与原理解析
@@ -40,23 +40,27 @@
 ├── dotfiles/                          # 用户级应用核心配置 (fastfetch, alacritty, Code, mpv, zathura)
 ├── scripts/                           # 辅助脚本（标准化电池放电功率中位数采样）
 ├── hosts/
-│   └── sv8/
-│       ├── default.nix                # 主机模块入口、主机名与系统状态版本
-│       └── hardware-configuration.nix # 硬件扫描生成的分区与内核模块配置
+│   ├── sv8/
+│   │   ├── default.nix                # SV8 主机入口（只做 imports、hostName、stateVersion）
+│   │   ├── sv8.nix                    # 唯一的 CF-SV8 本机特有配置（微码、松下驱动、核显、圆盘、S3、BAT1、光驱）
+│   │   └── hardware-configuration.nix # 硬件扫描生成的分区与内核模块配置
+│   └── template/
+│       ├── default.nix                # 新电脑接入模板起点（仅引用通用模块，无任何本机特有项）
+│       └── hardware-configuration.nix # 硬件占位配置（新机部署时由扫描生成覆盖）
 ├── modules/
-│   ├── base.nix                       # Nix 设置、引导上限、时区 Locale、用户、基础工具、direnv
-│   ├── hardware-sv8.nix               # CPU 微码、非自由固件、panasonic_laptop、ZRAM、fstrim
-│   ├── graphics.nix                   # Intel UHD 620 核显、VAAPI 硬解、modesetting、autorandr
-│   ├── input.nix                      # 美式 US 键盘布局、松下圆盘触摸板 (synaptics くるくるスクロール)
-│   ├── power.nix                      # 深度睡眠 (S3 deep)、TLP 省电策略与 10W 冷凉静音固化
-│   ├── desktop-dwm.nix                # DWM 窗口管理器、DPI 缩放、壁纸、picom 半透明、slock 锁屏
-│   ├── fonts-ime.nix                  # 中日韩全套字体（Noto CJK）、Fontconfig 回退优先级（免输入法）
-│   └── services.nix                   # NetworkManager、蓝牙、PipeWire 音频、PCManFM、Zathura、Clash
+│   ├── default.nix                    # 通用模块统一汇总入口（多主机一行即可引入全部通用模块）
+│   ├── base.nix                       # Nix 设置、引导上限、通用固件、ZRAM 内存优化、fstrim、时区、用户
+│   ├── graphics.nix                   # 通用图形栈支持与 autorandr 外接显示器自动配置
+│   ├── input.nix                      # 通用美式 US 键盘布局与控制台键位（通用机型 libinput 默认开启）
+│   ├── power.nix                      # 通用电源监控 (UPower)、logind 电源事件、TLP 节能策略与外设白名单
+│   ├── desktop-dwm.nix                # DWM 窗口管理器、读取 host DPI（默认 96）、壁纸、picom、slock
+│   ├── fonts-ime.nix                  # 中日韩全套字体（Noto CJK）、Fontconfig 回退优先级（免打字输入法）
+│   └── services.nix                   # NetworkManager、蓝牙、PipeWire 音频、PCManFM、Zathura、Clash Verge
 └── pkgs/                              # 本地自定义包与源码配置树
     ├── dwm/config.h                   # DWM 核心按键绑定与工作区 (1~6)
     ├── st/config.h & patches/         # st 终端回滚/宽字形/Ctrl+Click 补丁、竖线光标、字号配置
     ├── dmenu/config.h                 # dmenu 配色与字体
-    └── slstatus/config.h              # 状态栏监控项：CPU/RAM/WIFI(✓/✗)/BAT/短时钟
+    └── slstatus/config.h.in           # 状态栏监控模板（@batteryName@ 由 Nix 选项 my.batteryName 动态替换）
 ```
 
 ---
@@ -67,18 +71,20 @@
 | :--- | :--- | :--- |
 | **电源能效与 EPP 调频策略** | `modules/power.nix` | §2. TLP 设置 (`eppOnAc` / `eppOnBat`) |
 | **开机引导项保留代数** | `modules/base.nix` | 顶部 `let bootLimit = 3;` |
-| **用户与 sudo 权限 / 用户组** | `modules/base.nix` | §4. 用户与权限 (`users.users.flynn`) |
-| **系统预装 CLI 工具 / 开发包** | `modules/base.nix` | §5. 基础系统工具 (`systemPackages`) |
+| **用户与 sudo 权限 / 用户组** | `modules/base.nix` | §5. 用户与权限 (`users.users.flynn`) |
+| **系统预装 CLI 工具 / 开发包** | `modules/base.nix` | §6. 基础系统工具 (`systemPackages`) |
 | **图形文件管理 / PDF / 日常软件** | `modules/services.nix` | §4. 存储、桌面支持与日常应用 |
 | **键盘映射布局 (标准美式 US)** | `modules/input.nix` | §1. 键盘布局 (`xkb.layout`) |
-| **圆形滚动灵敏度 / 触发方式** | `modules/input.nix` | §2. 触摸板设置 (`CircScrollDelta = "0.2"`) |
+| **圆形滚动灵敏度 / 触发方式** | `hosts/sv8/sv8.nix` | §4. 圆盘触摸板 (`CircScrollDelta = "0.2"`) [这条属于 sv8.nix] |
+| **屏幕缩放比例 (全局 DPI)** | `hosts/sv8/sv8.nix` | §3. 显示设置 (`services.xserver.dpi = 144`) [这条属于 sv8.nix] |
+| **S3 深度睡眠 / 内核参数** | `hosts/sv8/sv8.nix` | §5. 睡眠与内核参数 (`mem_sleep_default=deep`) [这条属于 sv8.nix] |
+| **状态栏电池节点名称** | `hosts/sv8/sv8.nix` | §6. 电池节点名称 (`my.batteryName = "BAT1"`) [这条属于 sv8.nix] |
 | **合盖睡眠与电源键行为** | `modules/power.nix` | §1. 睡眠模式与合盖锁屏 (`services.logind`) |
-| **屏幕缩放比例 (全局 DPI)** | `modules/desktop-dwm.nix` | 顶部 `let targetDpi = 144;` (1.5x) |
 | **桌面壁纸图片** | `wallpapers/` 目录 | 替换图片或修改 `modules/desktop-dwm.nix` 的 `wallpaperPath` |
 | **DWM 快捷键、窗口排版** | `pkgs/dwm/config.h` | `keys[]` 数组定义 |
 | **终端模拟器 (st) 字体/字号/光标** | `pkgs/st/config.h` | `font` 与 `cursorshape` (6 为竖线) |
 | **应用菜单 (dmenu) 配色与字体** | `pkgs/dmenu/config.h` | `colors[]` 与 `font` |
-| **状态栏 (slstatus) 监控信息** | `pkgs/slstatus/config.h` | `args[]` 数组 |
+| **状态栏 (slstatus) 监控信息** | `pkgs/slstatus/config.h.in` | `args[]` 数组 |
 | **字体安装与 CJK 回退优先级** | `modules/fonts-ime.nix` | §1. 字体包与 Fontconfig 默认值 |
 
 ---
@@ -188,16 +194,34 @@ sudo nix-store --optimise
 
 ---
 
-### 场景 B：迁移到非松下设备（如 ThinkPad、通用 PC 或虚拟机）
+### 场景 B：新电脑快速接入（5 步接入指南）
 
-若迁移到非 CF-SV8 的其它设备，只需检查以下 3 处硬件差异：
+得益于 `hosts/sv8/sv8.nix` 与通用 `modules/` 的彻底解耦，为任意新电脑（ThinkPad、普通 PC、虚拟机等）复现极简桌面仅需 5 步：
 
-1. **触摸板驱动**（[modules/input.nix](modules/input.nix)）：
-   - 非松下电脑无物理圆盘，将 `services.libinput.enable = false;` 改为 `true`，并关闭 `services.xserver.synaptics`。
-2. **显卡驱动**（[modules/graphics.nix](modules/graphics.nix)）：
-   - 若非 Intel 核显（如 AMD Radeon 或 Nvidia），将 `intel-media-driver` 替换为对应显卡驱动，并移除 `boot.kernelParams = [ "i915.enable_psr=0" ]`。
-3. **电池状态接口**（[pkgs/slstatus/config.h](pkgs/slstatus/config.h)）：
-   - 非松下笔记本电池接口通常为 `BAT0`（松下为 `BAT1`），如需状态栏显示电量，在 `slstatus/config.h` 中将 `BAT1` 改为 `BAT0`。
+1. **复制模板目录**：
+   ```bash
+   cp -r hosts/template hosts/<新主机名>
+   ```
+2. **生成硬件配置**：
+   ```bash
+   nixos-generate-config --show-hardware-config > hosts/<新主机名>/hardware-configuration.nix
+   ```
+3. **修改主机名**：
+   编辑 `hosts/<新主机名>/default.nix`，设置：
+   ```nix
+   networking.hostName = "<新主机名>";
+   ```
+4. **加入 flake.nix 入口**：
+   在 `flake.nix` 的 `outputs.nixosConfigurations` 中添加：
+   ```nix
+   nixosConfigurations.<新主机名> = nixpkgs.lib.nixosSystem {
+     system = "x86_64-linux";
+     modules = [ ./hosts/<新主机名> ];
+   };
+   ```
+5. **编写本机特有配置**：
+   若该机器有特有硬件（如 CPU 微码、独立显卡驱动、屏幕特定 DPI 等），新建 `hosts/<新主机名>/<新主机名>.nix` 并在 `hosts/<新主机名>/default.nix` 中引入；通用项无需重复编写，直接复用 `modules/`。
+
 
 ---
 

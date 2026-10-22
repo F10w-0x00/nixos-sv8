@@ -14,5 +14,12 @@
           ./hosts/sv8
         ];
       };
+
+      nixosConfigurations.template = nixpkgs.lib.nixosSystem {
+        system = "x86_64-linux";
+        modules = [
+          ./hosts/template
+        ];
+      };
     };
 }
