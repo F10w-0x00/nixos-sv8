@@ -150,6 +150,11 @@ sudo nix-store --optimise
   sudo nixos-rebuild switch --rollback
   ```
 
+### 6. Git 提交与 Generation 代数关联规范
+为了方便回溯每次代码变更所对应的具体系统版本，本仓库约定每次提交均标注生效的系统代数：
+- 规范格式：`<type>(<scope>): <描述> (Gen <代数>)`，例如 `feat(services): update xxx (Gen 52)`。
+- 自动化钩子：仓库已配置 `.git/hooks/prepare-commit-msg`，日常提交时会自动抓取当前激活的 Generation 注入提交信息，确保 Git 提交记录与系统代数严格一一对应。
+
 ---
 
 ## 新机安装与跨机器复现指南
