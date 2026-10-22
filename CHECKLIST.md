@@ -108,11 +108,11 @@
 - [x] A7：新电脑接入落地（创建 `hosts/template/default.nix`，占位 stub 独立求值验证无本机项污染；更新 `README.md` 5 步接入指南与速查表）
 - [x] A8：Git 提交与打标（重构前 `git tag pre-refactor`，完成后 `git commit` 并打标 `git tag sv8nix-split`）
 
-### 第三部分：任务 B —— macOS 样式光标（任务 A 之后，独立一次 rebuild）
-- [x] B1：确认选包 `apple-cursor` 并核实主题目录名
-- [x] B2：新建 `modules/appearance.nix`，配置多层光标（`environment.variables`、xrdb、GTK 3/4 settings.ini、尺寸 32/推导）
-- [x] B3：用户 rebuild 并重启 X 会话后，执行只读命令检查并在 `NOTES.md` 建立「光标排查表」
-- [x] B4：完善注释（首次出现的概念配说明）与回滚指南
+### 第三部分：任务 B —— 低延迟光标主题（Adwaita 与 XInput2 异步事件流）
+- [x] B1：实测排除多层位图导致链接卡顿的第三方主题，统一采用原生经典 `Adwaita`
+- [x] B2：新建 `modules/appearance.nix`，配置多层低延迟光标（`Adwaita` 24px、xrdb、GTK 3/4 settings.ini）
+- [x] B3：在 `modules/services.nix` 注入 `MOZ_USE_XINPUT2 = "1";` 开启浏览器异步事件流
+- [x] B4：在 `NOTES.md` 记录深层排查原理与光标排查表，完善速查说明
 
 ### 第四部分：任务 C —— DVD+R 刻录（任务 B 之后）
 - [x] C0：严格坚守红线（绝不向光盘写数据，全流程普通用户，禁止 agent 写入调用）
