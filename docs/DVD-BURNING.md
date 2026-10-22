@@ -71,15 +71,16 @@ systemd-inhibit --what=idle:sleep:handle-lid-switch --who="DVD Burning" --why="B
 ---
 
 ### 场景 B：直接将本地文件夹打包并刻录（一步到位）
-适用于离线数据冷备份、照片与文档归档，无需提前在磁盘生成庞大的临时 ISO 文件：
+适用于离线数据冷备份、照片与文档归档，无需提前在磁盘生成庞大的临时 ISO 文件（由底层 `growisofs` 调用 `mkisofs` 管道实时生成数据流）：
 ```bash
 systemd-inhibit --what=idle:sleep:handle-lid-switch --who="DVD Burning" --why="Backing up files" \
   growisofs -dvd-compat -speed=4 -Z /dev/sr0 \
-    -J -R -V "FLYNN_BACKUP_2026" /path/to/my_data/
+    -J -R -V "Yorimoi" "/home/flynn/Videos/Anime/[BDrip] Uchuu Yorimo Toui Basho S01/"
 ```
 * `-J`：生成 Joliet 扩展（兼容 Windows 长文件名与 Unicode）。
 * `-R`：生成 Rock Ridge 扩展（兼容 Linux 文件权限与大小写敏感）。
-* `-V "LABEL"`：指定光盘卷标名（Volume ID，字母大写）。
+* `-V "LABEL"`：指定光盘卷标名（Volume ID）。**注意：ISO 9660 标准强制要求卷标不得超过 32 字符**（例如 `"Yorimoi"`，若超长会直接报错退出）。
+* `"/path/to/data/"`：**路径必须用双引号包裹**，尤其是包含空格、中文字符或 `[` `]` 方括号的动漫/资源目录，防止 Shell 分词报错 `Invalid node`。
 
 ---
 
@@ -115,3 +116,12 @@ head -c $(stat -c %s image.iso) /dev/sr0 | sha256sum
 2. **提示 `FATAL: /dev/sr0 already carries isofs! Use -M to append or -Z to overwrite`**
    - 原因：盘内已有旧文件系统（非全新盘）。
    - 解决：DVD+R 为一次性写入介质，若已封盘（Closed Session）则不可重写；若是 DVD+RW 可重写盘，可加上 `-Z /dev/sr0=...` 强制覆盖，或先运行 `dvd+rw-format -force /dev/sr0` 格式化。
+3. **提示 `unable to execute mkisofs: No such file or directory`**
+   - 原因：系统缺少 ISO9660 文件系统生成工具。
+   - 解决：`hosts/sv8/sv8.nix` §8 已纳入 `cdrkit`（原生提供 `mkisofs` 与 `genisoimage`），rebuild 后系统全局开箱即用，无需临时 `nix-shell`。
+4. **提示 `genisoimage: Volume ID string too long`**
+   - 原因：`-V` 卷标长度超过了 ISO 9660 协议硬性规定的 32 字节。
+   - 解决：缩短卷标至 32 字符以内（例如从 `A_Place_Further_Than_the_Universe` 缩短为 `Yorimoi`）。
+5. **提示 `genisoimage: No such file or directory. Invalid node - ...`**
+   - 原因：刻录的目标目录路径包含空格或 `[` `]` 等特殊字符，且在命令行中未加引号，被 Shell 错误截断分词。
+   - 解决：始终在路径外层添加双引号，如 `"/home/flynn/Videos/Anime/[BDrip] Yorimoi/"`。
