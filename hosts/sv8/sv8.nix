@@ -80,8 +80,9 @@
     # §4 松下圆盘触摸板调试工具 (synclient / xinput)
     xf86-input-synaptics
     xinput
-    # §7 内置光驱免提权刻录工具集 (growisofs / xorriso)
+    # §7 内置光驱免提权刻录工具集 (growisofs / cdrkit / xorriso)
     dvdplusrwtools
+    cdrkit # 原生提供 mkisofs 与 genisoimage，供 growisofs 实时打包目录直刻
     xorriso
   ];
 }

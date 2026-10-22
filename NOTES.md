@@ -262,7 +262,7 @@
 | **外接显示输出 (HDMI)** | **正常** | Intel UHD 620 + `autorandr` (`modules/graphics.nix`) | 支持 HDMI 外接高分屏与多屏自动重排 |
 | **Type-C / 雷电 3 (TB3)** | **正常** | `thunderbolt` + UCSI PD 驱动 | 支持 65W PD 诱骗快充与雷电高速外设数据传输 |
 | **指纹识别模块** | **不可用** | 硬件未配备 | 原厂选配项，本机未搭载指纹传感器硬件（`lsusb`/`lspci` 确认不存在） |
-| **内置 DVD 刻录光驱** | **正常** | `HL-DT-ST DVDRAM GUD0N` (`/dev/sr0`) | 9.5mm 超薄 SATA 光驱，已配置免提权刻录工具集 (`dvdplusrwtools` / `xorriso`) 与防睡眠指南 (`docs/DVD-BURNING.md`)；实测 `eject` 正常电磁开仓，手推机械锁紧复位 |
+| **内置 DVD 刻录光驱** | **正常** | `HL-DT-ST DVDRAM GUD0N` (`/dev/sr0`) | 9.5mm 超薄 SATA 光驱，已配置免提权刻录工具集 (`dvdplusrwtools` / `cdrkit` / `xorriso`) 与防睡眠指南 (`docs/DVD-BURNING.md`)；2026-10-22 实测成功刻录《比宇宙更远的地方》DVD+R，电磁开仓与写入完全正常 |
 | **WWAN 4G 蜂窝网络** | **正常** | Sierra Wireless MC7455 (`qcserial` + `cdc_mbim`) | 驱动加载完毕，NetworkManager 识别为 `enabled` |
 
 ---
@@ -491,6 +491,19 @@ Zathura 采用极简设计，基于轻量快速的 MuPDF 渲染后端，配合�
 - **操作技能与快捷键解耦**：
   - 将原本分散记录在 `NOTES.md` 中的所有快捷键速查表（DWM 窗口管理、多媒体 Fn 键、Zathura 快捷键、触控板手势、Alacritty 终端操作）全量迁移并整合至专用技能文档 `docs/SKILL.md`（并保留 `docs/SHORTCUTS.md` 软链接）。
   - `NOTES.md` 专注于纯粹的架构演进、硬件参数基线、故障根因分析与调优档案。
+
+### 10. DVD+R 光盘刻录首次实测验收与依赖闭环 (2026-10-22)
+
+- **实机刻录验证**：
+  - 用户使用松下 CF-SV8 内置 9.5mm 超薄刻录机（`HL-DT-ST DVDRAM GUD0N`，`/dev/sr0`）成功执行物理烧录；
+  - 刻录内容：《比宇宙更远的地方》（Uchuu Yorimo Toui Basho / よりもい）S01 蓝光压制合集；
+  - 核心参数：4x 写入速度（`-speed=4`）、DVD-ROM 兼容引导（`-dvd-compat`）、`systemd-inhibit` 阻塞睡眠锁；
+  - 卷标命名：`Yorimoi`（符合 ISO 9660 标准 ≤ 32 字符约束）；
+  - 刻录结果：双层文件系统结构生成完毕，成功写入盘片，硬件电磁弹出正常。
+- **依赖遗漏与整改**：
+  - 现象：`growisofs` 在执行目录实时直刻（On-the-fly mastering）时，依赖 `mkisofs` 生成 ISO9660 数据流；原系统仅安装 `dvdplusrwtools` 导致报 `mkisofs: No such file or directory`。
+  - 根治：在 `hosts/sv8/sv8.nix` §8 补全 `cdrkit`（原生提供 `mkisofs` 与 `genisoimage`），实现系统级免 nix-shell 开箱即用直刻；
+  - 文档完善：在 `docs/DVD-BURNING.md` 标明 Volume ID 长度上限（≤ 32 字符）与文件夹路径带空格时强制双引号规范。
 
 
 
