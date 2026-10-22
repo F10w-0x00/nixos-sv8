@@ -6,7 +6,7 @@
  * font: see http://freedesktop.org/software/fontconfig/fontconfig-user.html
  */
 static char *font = "JetBrainsMono Nerd Font:pixelsize=20:antialias=true:autohint=true";
-static int borderpx = 6;
+static int borderpx = 12;
 
 /*
  * What program is execed by st depends of these precedence rules:
@@ -95,33 +95,33 @@ unsigned int tabspaces = 8;
 
 /* Terminal colors (16 first used in escape sequence) */
 static const char *colorname[] = {
-	/* 8 normal colors */
-	"black",
-	"red3",
-	"green3",
-	"yellow3",
-	"blue2",
-	"magenta3",
-	"cyan3",
-	"gray90",
+	/* 8 normal colors (Catppuccin Mocha) */
+	"#45475a", /* 0: black   (Surface 1) */
+	"#f38ba8", /* 1: red     (Red) */
+	"#a6e3a1", /* 2: green   (Green) */
+	"#f9e2af", /* 3: yellow  (Yellow) */
+	"#89b4fa", /* 4: blue    (Blue) */
+	"#f5c2e7", /* 5: magenta (Pink) */
+	"#94e2d5", /* 6: cyan    (Teal) */
+	"#bac2de", /* 7: white   (Subtext 1) */
 
-	/* 8 bright colors */
-	"gray50",
-	"red",
-	"green",
-	"yellow",
-	"#5c5cff",
-	"magenta",
-	"cyan",
-	"white",
+	/* 8 bright colors (Catppuccin Mocha) */
+	"#585b70", /* 8:  bright black   (Surface 2) */
+	"#f38ba8", /* 9:  bright red     (Red) */
+	"#a6e3a1", /* 10: bright green   (Green) */
+	"#f9e2af", /* 11: bright yellow  (Yellow) */
+	"#89b4fa", /* 12: bright blue    (Blue) */
+	"#f5c2e7", /* 13: bright magenta (Pink) */
+	"#94e2d5", /* 14: bright cyan    (Teal) */
+	"#a6adc8", /* 15: bright white   (Subtext 0) */
 
 	[255] = 0,
 
 	/* more colors can be added after 255 to use with DefaultXX */
-	"#cccccc",
-	"#555555",
-	"gray90", /* default foreground colour */
-	"black", /* default background colour */
+	"#f5e0dc", /* 256: cursor (Rosewater) */
+	"#11111b", /* 257: reverse cursor (Crust) */
+	"#cdd6f4", /* 258: default foreground colour (Text) */
+	"#1e1e2e", /* 259: default background colour (Base) */
 };
 
 
