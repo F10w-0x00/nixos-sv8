@@ -286,7 +286,7 @@
   2. **Alacritty**：`/home/flynn/.config/alacritty.toml`
      - 个人偏好：`size = 13.0`、JetBrainsMono Nerd Font、`opacity = 1.0`、无边框窗口模式 (Windowed)。
   3. **Fastfetch**：`/home/flynn/.config/fastfetch/config.jsonc`
-     - 个人偏好：自定义 ASCII 图标、官方原生 `uptime` 运行时间展示、优雅紧凑布局。
+     - 个人偏好：自定义 ASCII 图标、官方原生 `uptime` 运行时间展示、底部 Catppuccin Mocha 对称彩虹色谱圆环（Chris Titus 风格定制）。
   4. **Btop**：`/home/flynn/.config/btop/btop.conf`
      - 个人偏好：资源监控器主题与刷新频率。
   5. **Zathura**：`/home/flynn/.config/zathura/zathurarc`
