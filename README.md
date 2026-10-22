@@ -58,7 +58,6 @@
 │   └── services.nix                   # NetworkManager、蓝牙、PipeWire 音频、PCManFM、Zathura、Clash Verge
 └── pkgs/                              # 本地自定义包与源码配置树
     ├── dwm/config.h                   # DWM 核心按键绑定与工作区 (1~6)
-    ├── st/config.h & patches/         # st 终端回滚/宽字形/Ctrl+Click 补丁、竖线光标、字号配置
     ├── dmenu/config.h                 # dmenu 配色与字体
     └── slstatus/config.h.in           # 状态栏监控模板（@batteryName@ 由 Nix 选项 my.batteryName 动态替换）
 ```
@@ -79,10 +78,11 @@
 | **屏幕缩放比例 (全局 DPI)** | `hosts/sv8/sv8.nix` | §3. 显示设置 (`services.xserver.dpi = 144`) [这条属于 sv8.nix] |
 | **S3 深度睡眠 / 内核参数** | `hosts/sv8/sv8.nix` | §5. 睡眠与内核参数 (`mem_sleep_default=deep`) [这条属于 sv8.nix] |
 | **状态栏电池节点名称** | `hosts/sv8/sv8.nix` | §6. 电池节点名称 (`my.batteryName = "BAT1"`) [这条属于 sv8.nix] |
+| **内置光驱与 DVD 刻录** | `hosts/sv8/sv8.nix` | §7. 内置光驱与免提权刻录工具集 (`dvdplusrwtools` / `xorriso`)，指南见 [docs/DVD-BURNING.md](docs/DVD-BURNING.md) [这条属于 sv8.nix] |
 | **合盖睡眠与电源键行为** | `modules/power.nix` | §1. 睡眠模式与合盖锁屏 (`services.logind`) |
 | **桌面壁纸图片** | `wallpapers/` 目录 | 替换图片或修改 `modules/desktop-dwm.nix` 的 `wallpaperPath` |
 | **DWM 快捷键、窗口排版** | `pkgs/dwm/config.h` | `keys[]` 数组定义 |
-| **终端模拟器 (st) 字体/字号/光标** | `pkgs/st/config.h` | `font` 与 `cursorshape` (6 为竖线) |
+| **终端模拟器 (Alacritty) 字体/字号/边距** | `~/.config/alacritty.toml` | `[font]` 与 `[window.padding]`（热加载免编译） |
 | **应用菜单 (dmenu) 配色与字体** | `pkgs/dmenu/config.h` | `colors[]` 与 `font` |
 | **状态栏 (slstatus) 监控信息** | `pkgs/slstatus/config.h.in` | `args[]` 数组 |
 | **字体安装与 CJK 回退优先级** | `modules/fonts-ime.nix` | §1. 字体包与 Fontconfig 默认值 |
@@ -103,7 +103,7 @@
 
 | 快捷键 | 功能 | 说明 |
 | :--- | :--- | :--- |
-| `Super + Shift + Enter` | 打开终端 | 启动半透明定制版 `st` 终端 |
+| `Super + Shift + Enter` | 打开终端 | 启动 GPU 加速 Alacritty 极速终端 |
 | `Super + p` | 打开应用启动器 | 唤起 `dmenu` 搜索并启动软件 |
 | `Super + Shift + c` | 关闭当前窗口 | 类似常规 Alt+F4 |
 | `Super + j / k` | 切换窗口焦点 | 在平铺窗口之间按序切换 |

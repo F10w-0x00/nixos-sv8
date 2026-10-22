@@ -263,6 +263,7 @@
 | **外接显示输出 (HDMI)** | **正常** | Intel UHD 620 + `autorandr` (`modules/graphics.nix`) | 支持 HDMI 外接高分屏与多屏自动重排 |
 | **Type-C / 雷电 3 (TB3)** | **正常** | `thunderbolt` + UCSI PD 驱动 | 支持 65W PD 诱骗快充与雷电高速外设数据传输 |
 | **指纹识别模块** | **不可用** | 硬件未配备 | 原厂选配项，本机未搭载指纹传感器硬件（`lsusb`/`lspci` 确认不存在） |
+| **内置 DVD 刻录光驱** | **正常** | `HL-DT-ST DVDRAM GUD0N` (`/dev/sr0`) | 9.5mm 超薄 SATA 光驱，已配置免提权刻录工具集 (`dvdplusrwtools` / `xorriso`) 与防睡眠指南 (`docs/DVD-BURNING.md`) |
 | **WWAN 4G 蜂窝网络** | **正常** | Sierra Wireless MC7455 (`qcserial` + `cdc_mbim`) | 驱动加载完毕，NetworkManager 识别为 `enabled` |
 
 ---
@@ -436,10 +437,10 @@ Zathura 采用极简设计，基于轻量快速的 MuPDF 渲染后端，配合�
 | `services.xserver.dpi = 144` | `modules/desktop-dwm.nix` | `hosts/sv8/sv8.nix` §3 | [SV8] 针对 CF-SV8 12.1寸 1920x1200 屏幕定制的 1.5x 视觉 DPI；通用模块读取该选项（默认回退 96） |
 | `customSlstatus` 电池名称 `"BAT1"` | `pkgs/slstatus/config.h` | `hosts/sv8/sv8.nix` §6 | [SV8] 松下电池节点为 BAT1；通用模块定义 `my.batteryName` 选项（默认 "BAT0"），由 `replaceVars` 动态注入模板 |
 | `wallpaperPath` (Kurisu.png/wallpaper.png) | `modules/desktop-dwm.nix` | `modules/desktop-dwm.nix` | 个人桌面壁纸偏好，随仓库自包含分发 |
-| `startx`, DWM, st, dmenu, picom, slock 等桌面组件 | `modules/desktop-dwm.nix` | `modules/desktop-dwm.nix` | 通用 Suckless 平铺桌面环境，跨机器通用 |
+| `startx`, DWM, Alacritty, dmenu, picom, slock 等桌面组件 | `modules/desktop-dwm.nix` | `modules/desktop-dwm.nix` | 通用平铺桌面环境，跨机器通用 |
 | `fonts` 与 `fonts.fontconfig.defaultFonts` | `modules/fonts-ime.nix` | `modules/fonts-ime.nix` | 个人 CJK 阅读与编程等宽字体偏好，跨机器通用 |
 | 基础服务 (NetworkManager, Bluetooth, PipeWire, fwupd, udisks2, portal) | `modules/services.nix` | `modules/services.nix` | 现代桌面基础环境，跨机器通用 |
-| 应用软件 (Firefox, PCManFM, Zathura, Steam, LocalSend 等) | `modules/services.nix` | `modules/services.nix` | 个人日常软件套件，跨机器通用 |
+| 应用软件 (Firefox, PCManFM, Zathura, LocalSend 等) | `modules/services.nix` | `modules/services.nix` | 个人日常软件套件，跨机器通用 |
 | 代理服务 (Clash Verge Rev) | `modules/services.nix` | `modules/services.nix` | 个人网络代理方案，跨机器通用（待用户确认 R3 后微调注释或模式） |
 | Nix 设置、GC、boot.loader、用户 `flynn`、开发工具 | `modules/base.nix` | `modules/base.nix` | 个人开发与运维环境基线，跨机器通用（待用户确认 R7 后微调系统级包） |
 | `fileSystems`, `swapDevices`, `initrd` 驱动模块 | `hosts/sv8/hardware-configuration.nix` | `hosts/sv8/hardware-configuration.nix` | 主机底层硬件固有分区与驱动，属于主机层 |
@@ -454,6 +455,48 @@ Zathura 采用极简设计，基于轻量快速的 MuPDF 渲染后端，配合�
 | **X11 资源数据库 (xrdb)** | `modules/appearance.nix` §3 (`Xcursor.theme` / `Xcursor.size`) | DWM 根窗口、st、dmenu、slock 等原生 X11 程序 | 若根窗口光标变为黑粗十字，检查 `xrdb -query \| grep -i xcursor`，并确认 `startx` 执行了 `xsetroot -cursor_name left_ptr` |
 | **全局环境变量 (XCURSOR_*)** | `modules/appearance.nix` §2 (`XCURSOR_THEME` / `XCURSOR_SIZE`) | Alacritty、VS Code (Electron)、Qt、Steam | 若终端或代码编辑器光标大小不匹配，检查 `echo $XCURSOR_THEME $XCURSOR_SIZE` 是否输出 `macOS 32` |
 | **GTK 3/4 设置 (settings.ini)** | `/etc/xdg/gtk-3.0/settings.ini`、`gtk-4.0` 与 `~/.config/gtk-*/settings.ini` | Firefox、PCManFM、Clash Verge (WebKitGTK) | 若浏览器内指针变成旧主题，检查用户级 `~/.config/gtk-3.0/settings.ini` 是否覆盖了系统级，并核查 `gtk-cursor-theme-name=macOS` |
+
+### 5. eMudhra (emSign) 中间 CA 私钥泄露事故处置 (2026-10)
+
+- **漏洞原理**：印度 CA 机构 eMudhra 在 2025 年 4 月密钥生成过程中发生脚本错误，生成的 8 个中间 CA 证书私钥严重缺乏熵（甚至直接等同于单字节极小整数如 `4`），攻击者可瞬间逆向私钥，从而能够任意为任意域名签署受信任的伪造 TLS 证书。
+- **影响范围**：由于其挂载并交叉签署于全局根证书（如 `emSign ECC Root CA - G3`），任何直接或间接信任该根证书的客户端若未开启 Certificate Transparency 强校验，都会遭受全流量中间人攻击（MITM）。
+- **实测验证**：
+  - 测试命令：`curl https://dv-g3b-emudhra.we-have-a-problem.com/`
+  - 修复前响应：`HTTP 200 OK`，OpenSSL 验证通过（`verify result: 0`），证明系统此前信任了受损根链！
+- **NixOS 缓解方案**：
+  - 在 `modules/base.nix` 中配置 `security.pki.caCertificateBlacklist`：
+    ```nix
+    security.pki.caCertificateBlacklist = [
+      "emSign ECC Root CA - C3"
+      "emSign ECC Root CA - G3"
+      "emSign Root CA - C1"
+      "emSign Root CA - G1"
+    ];
+    ```
+  - 重建系统后，NixOS 会在生成 `/etc/ssl/certs/ca-bundle.crt` 时自动剥离这 4 个根证书，后续 `curl` 访问受损证书将直接报错拒绝连接（code 60: certificate rejected）。
+
+### 6. 默认终端迁移 (st -> Alacritty) 与 USB 节能修复记录
+
+- **终端迁移**：
+  - `pkgs/dwm/config.h` 将 `termcmd` 改为 `"alacritty"`；
+  - `modules/desktop-dwm.nix` 移除 `customSt` 构建与 5 项补丁；
+  - `modules/services.nix` 注入 `environment.sessionVariables.TERMINAL = "alacritty";`；
+  - `dotfiles/alacritty/alacritty.toml` 与用户配置设置 `startup_mode = "Windowed"`，解决此前覆盖 DWM 顶部状态栏问题。
+- **USB 节能修复**：
+  - `modules/power.nix` 中设置 `USB_AUTOSUSPEND = 0;`，彻底禁用内核对 USB 设备的自动休眠，解决 2.4G 接收器间歇卡顿；
+  - 硬件层面推荐接入左侧独立供电 USB 口。
+
+### 7. 软件精简与彻底垃圾回收 (Steam & Piliplus)
+
+- **移除原因**：精简非必需桌面应用，释放根分区磁盘空间。
+- **配置变更**：
+  - `modules/services.nix`：彻底移除 `programs.steam` 配置及其远程畅玩防火墙规则；
+  - `modules/services.nix`：从 `environment.systemPackages` 中移除 `piliplus`。
+- **全量 GC 方案**：
+  - `sudo nix-collect-garbage -d`：删除所有旧代数系统 profile；
+  - `nix-collect-garbage -d`：删除用户 profile 历史；
+  - `sudo nix-store --optimise`：硬链接去重合并 store 空间。
+
 
 
 

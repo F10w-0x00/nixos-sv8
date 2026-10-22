@@ -49,6 +49,7 @@
 
   environment.sessionVariables = {
     BROWSER = "firefox";
+    TERMINAL = "alacritty";
   };
 
   # 局域网跨设备互传工具
@@ -77,16 +78,10 @@
   # 允许普通用户态 GUI 访问后台守护进程的套接字通信
   systemd.services.clash-verge.serviceConfig.PrivateTmp = lib.mkForce false;
 
-  # ── 6. 游戏与日常桌面套件 ────────────────────
-  programs.steam = {
-    enable = true;
-    remotePlay.openFirewall = true;
-  };
-
+  # ── 6. 日常桌面套件 ──────────────────────────
   environment.systemPackages = with pkgs; [
     pcmanfm # 轻量图形文件管理器
     zathura # 极简 Vim 键位平铺 PDF 阅读器
-    piliplus # Bilibili 第三方客户端
     newsflash # RSS 阅读器
     mpv # 轻量多媒体播放器
     ayugram-desktop # Telegram 增强型桌面客户端

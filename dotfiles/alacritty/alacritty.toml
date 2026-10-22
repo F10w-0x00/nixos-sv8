@@ -24,7 +24,7 @@ opacity = 1.0
 decorations = "None"
 
 
-startup_mode = "Fullscreen"
+startup_mode = "Windowed"
 
 [window.padding]
 x = 12

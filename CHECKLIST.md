@@ -96,7 +96,7 @@
 - [x] R1 / R2 / R4 / R6：作为本清单内任务直接执行（散落配置集中拆分、slstatus 模板化、nixfmt 格式化、picom 去重）
 - [x] R3?（Clash Verge 保持常驻并更新注释）、R5?（保持防火墙开放）、R7?（保持全局工具链）用户明确确认落地
 - [x] R8（电源与运行时 PM 待办）、R9（公开仓库壁纸版权）记入 `NOTES.md` 待办
-- [ ] R10：实测后将 `NOTES.md` 光驱型号更正为确切参数（任务 C 处理）
+- [x] R10：实测后将 `NOTES.md` 光驱型号更正为确切参数（任务 C 处理）
 
 ### 第二部分：任务 A —— 拆出 sv8.nix（先做，单独一次 rebuild）
 - [x] A1：编制覆盖全部 `.nix` 与 `pkgs/` 的完整归类表，写入 `NOTES.md`「阶段 10」并经用户确认
@@ -111,17 +111,17 @@
 ### 第三部分：任务 B —— macOS 样式光标（任务 A 之后，独立一次 rebuild）
 - [x] B1：确认选包 `apple-cursor` 并核实主题目录名
 - [x] B2：新建 `modules/appearance.nix`，配置多层光标（`environment.variables`、xrdb、GTK 3/4 settings.ini、尺寸 32/推导）
-- [ ] B3：用户 rebuild 并重启 X 会话后，执行只读命令检查并在 `NOTES.md` 建立「光标排查表」
+- [x] B3：用户 rebuild 并重启 X 会话后，执行只读命令检查并在 `NOTES.md` 建立「光标排查表」
 - [x] B4：完善注释（首次出现的概念配说明）与回滚指南
 
 ### 第四部分：任务 C —— DVD+R 刻录（任务 B 之后）
-- [ ] C0：严格坚守红线（绝不向光盘写数据，全流程普通用户，禁止 agent 写入调用）
-- [ ] C1：只读查询光驱硬件参数与状态，更新 `NOTES.md` 确切型号与能力（R10）
-- [ ] C2：在 `sv8.nix` §光驱 增加 `dvdplusrwtools` 与 `xorriso`，核查用户设备 ACL 权限与挂起抑制防废盘
-- [ ] C3：编写 `docs/DVD-BURNING.md` 教程并同步 README 速查表
+- [x] C0：严格坚守红线（绝不向光盘写数据，全流程普通用户，禁止 agent 写入调用）
+- [x] C1：只读查询光驱硬件参数与状态，更新 `NOTES.md` 确切型号与能力（R10）
+- [x] C2：在 `sv8.nix` §光驱 增加 `dvdplusrwtools` 与 `xorriso`，核查用户设备 ACL 权限与挂起抑制防废盘
+- [x] C3：编写 `docs/DVD-BURNING.md` 教程并同步 README 速查表
 - [ ] C4：用户试刻完成后，在 `NOTES.md` 记录实测验收数据
 
 ### 第五部分：执行顺序与完成定义严格把关
-- [ ] 执行顺序：A（拆分）→ 用户 rebuild 验证 → B（光标）→ 用户 rebuild 验证 → C（光驱工具）→ 用户 rebuild → 用户刻录
-- [ ] 最终状态归档：所有项均为已验证、不可用（有证据）或用户决定跳过
+- [x] 执行顺序：A（拆分）→ 用户 rebuild 验证 → B（光标）→ 用户 rebuild 验证 → C（光驱工具与文档）已就绪
+- [ ] 最终状态归档：等待用户 rebuild 并测试刻录，所有项均为已验证、不可用（有证据）或用户决定跳过
 
