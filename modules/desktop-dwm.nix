@@ -97,12 +97,9 @@ in
       package = customDwm;
     };
 
-    # ── 4. 桌面合成与配套工具 ────────────────────
-    services.picom = {
-      enable = true;
-      backend = "glx";
-      vSync = true;
-    };
+    # ── 4. 桌面配套工具 ──────────────────────────
+    # 禁用 picom 桌面合成器：DWM 平铺桌面无需半透明与阴影特效，禁用可彻底消除文本划选与复制时的 VSync 渲染延迟
+    services.picom.enable = false;
 
     programs.slock.enable = true; # 开启 setuid 权限支持校验用户密码
 
