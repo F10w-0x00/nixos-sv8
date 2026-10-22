@@ -12,7 +12,7 @@
 1. **[modules/desktop-dwm.nix](modules/desktop-dwm.nix) 与 [pkgs/dwm/config.h](pkgs/dwm/config.h)**：
    - 负责 DWM 窗口管理器、快捷键、字体字号 (11pt)、144 DPI (1.5x 缩放)、壁纸自包含加载、锁屏 (`slock`) 与终端半透明 (`picom`)。
 2. **[modules/power.nix](modules/power.nix)**：
-   - 负责功耗释放与电源调度。预置了 **方案 A（原厂 10W 冷凉静音）** 与 **方案 B（20W 满血编译性能）**，通过第 69 行一个布尔值即可无痛秒切。
+   - 负责电源与能效调度。固化原厂 10W 冷凉静音策略，结合 TLP 能效调度与 S3 深度睡眠，整机待机功耗低至 ~5.15W，兼顾极致低温与长续航。
 3. **[modules/input.nix](modules/input.nix)**：
    - 负责标准美式 US 键盘与松下经典圆形触控板驱动（`xf86-input-synaptics`），包含圆盘边缘旋转滚动（くるくるスクロール）核心参数。
 4. **[modules/services.nix](modules/services.nix) 与 [modules/base.nix](modules/base.nix)**：
@@ -48,7 +48,7 @@
 │   ├── hardware-sv8.nix               # CPU 微码、非自由固件、panasonic_laptop、ZRAM、fstrim
 │   ├── graphics.nix                   # Intel UHD 620 核显、VAAPI 硬解、modesetting、autorandr
 │   ├── input.nix                      # 美式 US 键盘布局、松下圆盘触摸板 (synaptics くるくるスクロール)
-│   ├── power.nix                      # 睡眠模式、TLP 省电策略、throttled 功耗双方案 (A/B 切换)
+│   ├── power.nix                      # 深度睡眠 (S3 deep)、TLP 省电策略与 10W 冷凉静音固化
 │   ├── desktop-dwm.nix                # DWM 窗口管理器、DPI 缩放、壁纸、picom 半透明、slock 锁屏
 │   ├── fonts-ime.nix                  # 中日韩全套字体（Noto CJK）、Fontconfig 回退优先级（免输入法）
 │   └── services.nix                   # NetworkManager、蓝牙、PipeWire 音频、PCManFM、Zathura、Clash
@@ -65,7 +65,7 @@
 
 | 想修改的内容 | 对应文件路径 | 所在小节或参数 |
 | :--- | :--- | :--- |
-| **功耗模式 (方案 A 冷凉 vs 方案 B 满血)** | `modules/power.nix` | §3. `services.throttled.enable` (`true`/`false`) |
+| **电源能效与 EPP 调频策略** | `modules/power.nix` | §2. TLP 设置 (`eppOnAc` / `eppOnBat`) |
 | **开机引导项保留代数** | `modules/base.nix` | 顶部 `let bootLimit = 3;` |
 | **用户与 sudo 权限 / 用户组** | `modules/base.nix` | §4. 用户与权限 (`users.users.flynn`) |
 | **系统预装 CLI 工具 / 开发包** | `modules/base.nix` | §5. 基础系统工具 (`systemPackages`) |
@@ -83,23 +83,13 @@
 
 ---
 
-## 功耗方案快速切换指南 (方案 A vs 方案 B)
+## 电源管理与能效策略 (固化 10W 冷凉静音)
 
-本机针对松下轻薄镁合金特性与日常重负载编译需求，预设了两套成熟方案：
+针对松下 CF-SV8 轻薄镁合金机身特性，本配置彻底固化了**原厂 10W 冷凉静音与超长续航策略**，移除了第三方功耗覆写守护进程：
 
-- **方案 A（原厂 10W 冷凉静音，当前生效）**：持续功耗 10W，CPU 全核 1.6~1.7 GHz，外壳低于 48°C，超长续航，适合不插电移动办公或放膝盖上使用。
-- **方案 B（20W 满血编译性能）**：持续功耗 20W，CPU 全核 2.4~3.0GHz+，编译耗时减半，适合插电桌面写代码与编译。
-
-### 秒级切换方法
-1. **即时临时切回方案 A（不重启、不 rebuild）**：
-   ```bash
-   sudo systemctl stop throttled
-   ```
-2. **永久切换**：
-   打开 [modules/power.nix](modules/power.nix)，仅需修改第 69 行：
-   - 切换为方案 A：`services.throttled.enable = false;`
-   - 切换为方案 B：`services.throttled.enable = true;`
-   然后运行 `sudo nixos-rebuild switch --flake ~/nixos-config#sv8` 即可。
+- **持续功耗**：稳定释放 10W，CPU 全核 1.6~1.7 GHz，外壳低于 48°C，风扇几乎保持停转或微风静音。
+- **低功耗深度驻留**：结合 TLP 电源调度与 Intel C-states 优化，CPU 空闲封装仅 ~3W，C10 深度驻留，整机离电空闲功耗低至 **~5.15W**，实测续航可达 7~9 小时。
+- **纯净稳定**：100% 依赖 Linux 原生 TLP 与固件调度，无驻留后台的寄存器高频覆写循环，杜绝系统不稳定隐患。
 
 ---
 
@@ -201,14 +191,13 @@ sudo nix-store --optimise
    - 非松下电脑无物理圆盘，将 `services.libinput.enable = false;` 改为 `true`，并关闭 `services.xserver.synaptics`。
 2. **显卡驱动**（[modules/graphics.nix](modules/graphics.nix)）：
    - 若非 Intel 核显（如 AMD Radeon 或 Nvidia），将 `intel-media-driver` 替换为对应显卡驱动，并移除 `boot.kernelParams = [ "i915.enable_psr=0" ]`。
-3. **电池与电源策略**（[modules/power.nix](modules/power.nix) 与 [pkgs/slstatus/config.h](pkgs/slstatus/config.h)）：
+3. **电池状态接口**（[pkgs/slstatus/config.h](pkgs/slstatus/config.h)）：
    - 非松下笔记本电池接口通常为 `BAT0`（松下为 `BAT1`），如需状态栏显示电量，在 `slstatus/config.h` 中将 `BAT1` 改为 `BAT0`。
-   - `modules/power.nix` 中的 `throttled` 为 Intel 专有工具，非 Intel 平台请保持 `enable = false`。
 
 ---
 
 ## 已知事项与硬件特性 (CF-SV8)
-1. **CPU**：Intel Core i7-8665U (Whiskey Lake, 4C/8T)，当前开启方案 A (10W 冷凉静音超长续航)。
+1. **CPU**：Intel Core i7-8665U (Whiskey Lake, 4C/8T)，固化原厂 10W 冷凉静音与超长续航。
 2. **内存**：16GB LPDDR3 (板载)，已配置 ZRAM 50% 动态压缩交换空间防 OOM。
 3. **硬盘**：256GB SATA SSD (`sda`)，已启用系统级 `fstrim.weekly`。
 4. **键盘**：采用标准美式 US 键盘布局（`layout = "us"`），完全移除 Fcitx5，保留全套 CJK 字体用于清晰阅读。
