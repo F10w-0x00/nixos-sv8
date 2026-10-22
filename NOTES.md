@@ -151,10 +151,9 @@
 ### 1. 松下平台驱动与按键
 - **`panasonic_laptop` 驱动**：已加载，输入设备绑定在 `/dev/input/event9` (`Panasonic Laptop Support`)。
 - **ACPI 事件**：日志中出现的 `Unknown hotkey event: 0x0030 / 0x0031` 为松下新机型固件广播通知，Fn 快捷键通过标准 AT PS/2 键盘发送标准 keycode。
-- **多媒体快捷键**：
-  - 亮度：`Fn + F1` (Down) / `Fn + F2` (Up) 直接调控 `intel_backlight`，步进 5%，平滑无频闪。
-  - 声音：`Fn + F4` (Mute)、`Fn + F5` (Down)、`Fn + F6` (Up) 直接联动 PipeWire (`wpctl`)，工作正常。
-  - 锁屏：`Super + Shift + l` 调用 `slock` 黑屏锁屏，盲打输入密码回车解锁。
+- **多媒体按键支持**：
+  - 亮度与音频：通过标准 AT PS/2 scancode 触发标准 XF86 键码，直接联动 `intel_backlight` 与 PipeWire (`wpctl`)。
+  - 快捷锁屏与截图：DWM 绑定 `slock` 与 `maim + xclip`。全量按键速查表详见 `docs/SKILL.md`。
 
 ### 2. 显示背光与环境光传感器 (ALS)
 - **背光设备**: `/sys/class/backlight/intel_backlight`，最大亮度 `16326`。
@@ -246,9 +245,9 @@
 | :--- | :---: | :--- | :--- |
 | **圆形滚动 (くるくるスクロール)** | **正常** | `xf86-input-synaptics` (`modules/input.nix`) | 实测圆盘边缘顺时针/逆时针顺畅滚动；`CircScrollDelta=0.2` 手感自然稳定 |
 | **触摸板点按 / 平移** | **正常** | `xf86-input-synaptics` (`modules/input.nix`) | 单指左键、双指右键、三指中键；双指平移滚动兼容传统操作 |
-| **亮度快捷键 (Fn+F1/F2)** | **正常** | PS/2 scancode + `brightnessctl` | 步进 5%，直接调控 `intel_backlight`，平滑无频闪 |
-| **音量快捷键 (Fn+F4/F5/F6)** | **正常** | PS/2 scancode + PipeWire (`wpctl`) | 一键静音、音量加减、麦克风静音，无弹窗卡顿 |
-| **功能快捷键 (锁屏/截图)** | **正常** | DWM 绑定 `slock` / `maim` + `xclip` | `Super+Shift+l` 极简黑屏锁屏；`PrtSc` 单键截图秒进系统剪贴板 |
+| **亮度按键** | **正常** | PS/2 scancode + `brightnessctl` | 步进 5%，直接调控 `intel_backlight`，平滑无频闪（按键详见 `docs/SKILL.md`） |
+| **音量按键** | **正常** | PS/2 scancode + PipeWire (`wpctl`) | 一键静音、音量加减、麦克风静音，无弹窗卡顿（按键详见 `docs/SKILL.md`） |
+| **功能按键 (锁屏/截图)** | **正常** | DWM 绑定 `slock` / `maim` + `xclip` | 黑屏锁屏与单键截图秒进系统剪贴板（按键详见 `docs/SKILL.md`） |
 | **无线滑块物理开关** | **部分** | DSDT MAT0028 只读识别 | 拨动滑块可物理切断蓝牙；Linux 暂无 MAT0028 驱动，依红线 4 不侵入写 EC，软件通过 NM/rfkill 统一管理 |
 | **睡眠模式 (Suspend)** | **正常** | ACPI 原生支持 `[s2idle] deep` | `services.logind` 合盖挂起，`xss-lock` 联动锁屏；功耗极低 |
 | **系统休眠 (Hibernate)** | **已跳过** | 用户阶段 0 决策跳过 | 阶段 0 明确无需磁盘 swap 挂起，纯使用 S3 deep 睡眠，节约 SSD 磨损 |
@@ -343,49 +342,12 @@
 
 ---
 
-## 阶段 17 — Zathura 极速 PDF 阅读器核心快捷键与高效操作指南 (2026-10-21)
+## 阶段 17 — Zathura 极速 PDF 阅读器集成与配置 (2026-10-21)
 
-Zathura 采用极简设计，基于轻量快速的 MuPDF 渲染后端，配合松下 CF-SV8 硬件与 DWM 桌面具有极高的阅读生产力。配置文件位于 `~/.config/zathura/zathurarc`（已同步归档至仓库 `dotfiles/zathura/zathurarc`，采用 Catppuccin Mocha 配色）。
-
-### 1. 硬件联动：松下圆盘旋转滚动 (くるくるスクロール)
-- **顺时针沿圆盘边缘旋转**：平滑向下滚动页面。
-- **逆时针沿圆盘边缘旋转**：平滑向上滚动页面。
-- **操作优势**：长篇大部头书籍或技术手册快速浏览时，手腕无需移动，如旋钮般精准无极滚屏。
-
-### 2. 页面浏览与定位快捷键 (Vim 键盘流)
-| 快捷键 | 功能 | 说明 |
-| :--- | :--- | :--- |
-| `j` / `k` 或 `Space` / `Shift+Space` | 逐行平滑滚动 | 细致阅读文本 |
-| `d` / `u` | 向下 / 向上滚动半屏 | Vim 经典半屏跳读 |
-| `J` / `K` | 直接切换至下 / 上一页 | 整页快速翻阅 |
-| `gg` / `G` | 快速直达文档首页 / 尾页 | 瞬时跳转至开头或参考文献 |
-| `<页码>G` | 精准跳转指定页码 | 例如输入 `120G` 瞬间定位到第 120 页 |
-| `Ctrl + o` / `Ctrl + i` | 历史跳转位置后退 / 前进 | 跳转查阅文献后原路返回原阅读点 |
-
-### 3. 版面展示与夜间护眼模式
-| 快捷键 | 功能 | 说明 |
-| :--- | :--- | :--- |
-| `a` | 适合窗口宽度 (Fit Width) | 16:10 宽屏单页阅读最佳默认比例 |
-| `s` | 适合整页展示 (Fit Page) | 缩放呈现整张页面布局 |
-| `d` | 切换双页并排阅读 | 杂志/论文双页展开，模拟纸质书阅读感 |
-| `Ctrl + r` | 切换暗黑反色护眼模式 (Recolor) | 白底黑字瞬间反色为深色背景，夜间不刺眼 |
-| `r` | 顺时针旋转 90 度 | 适配横版图表、宽屏表格或幻灯片 |
-
-### 4. 目录大纲、全文检索与超链接穿透
-| 快捷键 | 功能 | 说明 |
-| :--- | :--- | :--- |
-| `Tab` | 打开 / 关闭目录大纲 (Outline) | 按 `j`/`k` 选择章节，按 `Enter` 秒级跳转 |
-| `/` | 全文搜索关键词 | 按回车确认，`n` 查看下一个匹配项，`N` 查看上一个 |
-| `f` | 超链接穿透标注 (Follow Link) | 页面内所有引用、URL 标注数字，输入数字回车直达引用 |
-| `m<字母>` | 标记书签 | 例如 `ma` 标记当前位置为书签 a |
-| `'<字母>` | 跳转书签 | 例如 `'a` 瞬时回到书签 a |
-
-### 5. 原生文件打开与会话控制
-| 操作 | 方式 | 说明 |
-| :--- | :--- | :--- |
-| **内置命令行打开新文件** | 输入 `:open ~/路径/` 并按 `Tab` | 原生路径与文件名交互式自动补全 |
-| **退出阅读** | 按 `q` 或 DWM 快捷键 `Mod + Shift + c` | 退出时自动保存阅读进度（下次打开断点续读） |
-| **平铺窗口切换** | 按 DWM 快捷键 `Mod + Enter` | 将 Zathura 在 Master（左主屏）与 Stack（右副屏）间对调 |
+Zathura 采用极简设计，基于轻量快速的 MuPDF 渲染后端，配合松下 CF-SV8 硬件与 DWM 桌面具有极高的阅读生产力。
+- **配置文件**：`~/.config/zathura/zathurarc`（已同步归档至仓库 `dotfiles/zathura/zathurarc`，采用 Catppuccin Mocha 配色与夜间护眼模式）。
+- **硬件联动**：完美支持松下圆盘边缘顺时针/逆时针旋转滚动（くるくるスクロール）。
+- **全套 Vim 快捷键与操作技巧**：已完全解耦并整理至专用技能文档 `docs/SKILL.md`。
 
 ---
 
@@ -496,6 +458,7 @@ Zathura 采用极简设计，基于轻量快速的 MuPDF 渲染后端，配合�
     2. TLP 策略级：加入 `RUNTIME_PM_DENYLIST = "00:14.0";`（禁止挂起 USB 主控）与 `USB_DENYLIST = "3151:3020";`（锁定接收器）；
     3. Udev 规则级：`services.udev.extraRules` 强制保持 PCI USB 主控 (`0x0c0330`)、USB 集线器 (`09`) 与 2.4G 接收器 `power/control = on`；
     4. X11 驱动级 (`modules/input.nix`)：屏蔽 `YICHIP 2.4G Receiver Consumer Control` 误注册为第二鼠标，消除 X11 双指针事件争抢导致的间歇性挂起。
+  - **实测验收 (2026-10-22)**：用户在重启 X 会话后进行连续滑动与使用实测，确认间歇性冻结/停滞故障彻底消除。
 
 ### 7. 软件精简与彻底垃圾回收 (Steam & Piliplus)
 
@@ -507,6 +470,27 @@ Zathura 采用极简设计，基于轻量快速的 MuPDF 渲染后端，配合�
   - `sudo nix-collect-garbage -d`：删除所有旧代数系统 profile；
   - `nix-collect-garbage -d`：删除用户 profile 历史；
   - `sudo nix-store --optimise`：硬链接去重合并 store 空间。
+
+### 8. 文本划选与复制阻滞感根治 (Picom 剔除与直通渲染)
+
+- **故障现象**：在浏览器、终端或编辑器中拖拽划选、复制文字时，存在强烈的“粘滞阻力感 / 拖不动感”。
+- **深层机理溯源**：
+  1. **硬件光标 vs Damage 区域渲染时差**：普通鼠标移动由 GPU 硬件光标图层（Hardware Cursor Plane）独立直出，延迟为 0ms；而拖拽划选文本时，字符高亮框是应用内部的损伤重绘（Damage），必须通过 X11 事件管线。
+  2. **Picom GLX VSync 缓冲惩罚**：此前配置启用了 `services.picom = { backend = "glx"; vSync = true; };`。每次高频划选字符，局部重绘都必须等待 60Hz 垂直同步（16.6ms），导致高亮框跟随滞后物理指针 1~2 帧（16~33ms），造成极其强烈的物理粘滞错觉。
+  3. **DWM 平铺桌面的冗余开销**：DWM 窗口均为 100% 不透明，且未启用阴影与淡入淡出，Picom 实际无任何视觉特效产出，反而常态消耗约 1% CPU 并引入重绘排队。
+- **固化方案 (`modules/desktop-dwm.nix`)**：
+  - 显式声明 `services.picom.enable = false;`，停用桌面合成器。
+  - X11 采用 Glamor 纯直通渲染，窗口内部 Damage 绘制零等待缓冲，划词高亮完全跟随手速，同时释放常驻 CPU 功耗。
+
+### 9. 触控板偶发跳动排查与操作技能文档解耦 (2026-10-22)
+
+- **光标偶发跳动原因排查**：
+  - 分析 `Synaptics TM3136-020` 圆形触摸板硬件属性，发现该硬件控制器缺乏接触面积与手指宽度（Finger Width）上报能力（Xorg 日志明确提示 `invalid finger width range`）。
+  - 因此，synaptics 驱动的常规 `PalmDetect` 算法无法精确区分大面积手掌与单指。当双手在键盘输入或手腕靠近圆形触控板边缘时，轻微拂过即会被误判为指针移动，产生偶发的“瞬移/跳动”。
+  - 应对策略：使用外接 2.4G 鼠标时，手掌保持离开圆形触控板；后续若需要可在插入外接鼠标时通过 udev / xinput 脚本自动临时禁用触控板。
+- **操作技能与快捷键解耦**：
+  - 将原本分散记录在 `NOTES.md` 中的所有快捷键速查表（DWM 窗口管理、多媒体 Fn 键、Zathura 快捷键、触控板手势、Alacritty 终端操作）全量迁移并整合至专用技能文档 `docs/SKILL.md`（并保留 `docs/SHORTCUTS.md` 软链接）。
+  - `NOTES.md` 专注于纯粹的架构演进、硬件参数基线、故障根因分析与调优档案。
 
 
 

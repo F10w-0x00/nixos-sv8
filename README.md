@@ -12,7 +12,7 @@
 1. **[hosts/sv8/sv8.nix](hosts/sv8/sv8.nix)**：
    - 唯一的 CF-SV8 本机特有配置：包含松下圆盘触摸板驱动与滚动灵敏度、S3 深度睡眠、144 DPI、Intel 核显硬件加速、防闪屏补丁与电池节点名。
 2. **[modules/desktop-dwm.nix](modules/desktop-dwm.nix) 与 [pkgs/dwm/config.h](pkgs/dwm/config.h)**：
-   - 通用平铺桌面：负责 DWM 窗口管理器、快捷键、字体字号 (11pt)、壁纸自包含加载、锁屏 (`slock`) 与终端半透明 (`picom`)。
+   - 通用平铺桌面：负责 DWM 窗口管理器、快捷键、字体字号 (11pt)、壁纸自包含加载、锁屏 (`slock`) 与 Alacritty 极速终端。
 3. **[modules/power.nix](modules/power.nix)**：
    - 通用电源管理：固化原厂 10W 冷凉静音策略，结合 TLP 能效调度与 UPower，整机待机功耗低至 ~5.15W，兼顾极致低温与长续航。
 4. **[modules/services.nix](modules/services.nix) 与 [modules/base.nix](modules/base.nix)**：
@@ -104,6 +104,9 @@
 ---
 
 ## DWM 常用快捷键对照表
+
+> [!TIP]
+> 包含 DWM 窗口管理、松下硬件 Fn 热键、圆盘触控板手势、Zathura PDF 全套 Vim 键位与 Alacritty 技巧的完整手册请查阅专用技能文件：[docs/SKILL.md](docs/SKILL.md)（或快捷链接 [docs/SHORTCUTS.md](docs/SHORTCUTS.md)）。
 
 | 快捷键 | 功能 | 说明 |
 | :--- | :--- | :--- |
