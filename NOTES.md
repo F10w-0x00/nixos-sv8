@@ -494,7 +494,8 @@ Zathura 采用极简设计，基于轻量快速的 MuPDF 渲染后端，配合�
   - **三重固化方案 (`modules/power.nix`)**：
     1. 内核级：`boot.kernelParams = [ "usbcore.autosuspend=-1" ];` 全局禁用 USB 自动休眠；
     2. TLP 策略级：加入 `RUNTIME_PM_DENYLIST = "00:14.0";`（禁止挂起 USB 主控）与 `USB_DENYLIST = "3151:3020";`（锁定接收器）；
-    3. Udev 规则级：`services.udev.extraRules` 强制保持 PCI USB 主控 (`0x0c0330`) 与 2.4G 接收器 `power/control = on`。
+    3. Udev 规则级：`services.udev.extraRules` 强制保持 PCI USB 主控 (`0x0c0330`)、USB 集线器 (`09`) 与 2.4G 接收器 `power/control = on`；
+    4. X11 驱动级 (`modules/input.nix`)：屏蔽 `YICHIP 2.4G Receiver Consumer Control` 误注册为第二鼠标，消除 X11 双指针事件争抢导致的间歇性挂起。
 
 ### 7. 软件精简与彻底垃圾回收 (Steam & Piliplus)
 
