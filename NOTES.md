@@ -263,7 +263,7 @@
 | **外接显示输出 (HDMI)** | **正常** | Intel UHD 620 + `autorandr` (`modules/graphics.nix`) | 支持 HDMI 外接高分屏与多屏自动重排 |
 | **Type-C / 雷电 3 (TB3)** | **正常** | `thunderbolt` + UCSI PD 驱动 | 支持 65W PD 诱骗快充与雷电高速外设数据传输 |
 | **指纹识别模块** | **不可用** | 硬件未配备 | 原厂选配项，本机未搭载指纹传感器硬件（`lsusb`/`lspci` 确认不存在） |
-| **内置 DVD 刻录光驱** | **正常** | `HL-DT-ST DVDRAM GUD0N` (`/dev/sr0`) | 9.5mm 超薄 SATA 光驱，已配置免提权刻录工具集 (`dvdplusrwtools` / `xorriso`) 与防睡眠指南 (`docs/DVD-BURNING.md`) |
+| **内置 DVD 刻录光驱** | **正常** | `HL-DT-ST DVDRAM GUD0N` (`/dev/sr0`) | 9.5mm 超薄 SATA 光驱，已配置免提权刻录工具集 (`dvdplusrwtools` / `xorriso`) 与防睡眠指南 (`docs/DVD-BURNING.md`)；实测 `eject` 正常电磁开仓，手推机械锁紧复位 |
 | **WWAN 4G 蜂窝网络** | **正常** | Sierra Wireless MC7455 (`qcserial` + `cdc_mbim`) | 驱动加载完毕，NetworkManager 识别为 `enabled` |
 
 ---
@@ -482,9 +482,12 @@ Zathura 采用极简设计，基于轻量快速的 MuPDF 渲染后端，配合�
   - `modules/desktop-dwm.nix` 移除 `customSt` 构建与 5 项补丁；
   - `modules/services.nix` 注入 `environment.sessionVariables.TERMINAL = "alacritty";`；
   - `dotfiles/alacritty/alacritty.toml` 与用户配置设置 `startup_mode = "Windowed"`，解决此前覆盖 DWM 顶部状态栏问题。
-- **USB 节能修复**：
-  - `modules/power.nix` 中设置 `USB_AUTOSUSPEND = 0;`，彻底禁用内核对 USB 设备的自动休眠，解决 2.4G 接收器间歇卡顿；
-  - 硬件层面推荐接入左侧独立供电 USB 口。
+- **USB 节能深度溯源与根治**：
+  - **根本诱因实测**：读取 sysfs 发现并非仅接收器自身休眠，而是 Intel Cannon Point-LP USB 3.1 xHCI 控制器（PCI `0000:00:14.0`）与根集线器 `usb1` 被 TLP PCIe ASPM 强制置为 `power/control = auto`。无操作 2 秒后整个 USB 总线主控进入 D3 挂起，再次晃动鼠标时控制器需重新唤醒，导致鼠标移动时严重周期性停滞（每次卡 1~2 秒）。
+  - **三重固化方案 (`modules/power.nix`)**：
+    1. 内核级：`boot.kernelParams = [ "usbcore.autosuspend=-1" ];` 全局禁用 USB 自动休眠；
+    2. TLP 策略级：加入 `RUNTIME_PM_DENYLIST = "00:14.0";`（禁止挂起 USB 主控）与 `USB_DENYLIST = "3151:3020";`（锁定接收器）；
+    3. Udev 规则级：`services.udev.extraRules` 强制保持 PCI USB 主控 (`0x0c0330`) 与 2.4G 接收器 `power/control = on`。
 
 ### 7. 软件精简与彻底垃圾回收 (Steam & Piliplus)
 
