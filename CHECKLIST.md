@@ -46,7 +46,7 @@
 - [x] 电源管理方案：启用 TLP（`services.tlp.enable = true`），配置 EPP 能效平衡（插电 balance_performance / 电池 balance_power）、PCIe ASPM、Wi-Fi/声卡节能与 USB 防掉线
 - [x] 压力测试：`stress-ng` 实测证实持续功耗被压在约 10W（10.16 ~ 10.34W，频率 1.6~1.7 GHz）
 - [x] 结论汇报：查明限制来源为 DPTF 外壳温控墙（`thermal_zone5 / SEN2` 跳变点 56.05°C）与 EC 强制降频
-- [x] 用户决策（2026-10-19 变更）：采纳方案 B（启用 `services.throttled` 解锁 20W 性能），适配插电编译场景；在 `NOTES.md` 与 `power.nix` 详细记录调优参数与回滚方案
+- [x] 用户决策：彻底固化方案 A（原厂 10W 冷凉静音与超长续航），移除 throttled 守护进程与冗余切换代码，保持系统纯净稳定
 - [x] 睡眠实测：`cat /sys/power/mem_sleep` 输出 `[s2idle] deep`；开盖唤醒（`LID0`）、电源键与 USB 唤醒已由主板 ACPI 原生启用
 - [x] 合盖行为、空闲锁屏、低电量动作（`services.logind` / upower）：配置合盖与轻按电源键挂起睡眠，`xss-lock` 联动 `slock` 自动黑屏锁屏；`upower` 正常运行
 - [x] 休眠（可选，仅当我要）：用户阶段 0 决策明确不启用休眠，按指示跳过
