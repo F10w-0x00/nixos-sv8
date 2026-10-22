@@ -386,3 +386,63 @@ Zathura 采用极简设计，基于轻量快速的 MuPDF 渲染后端，配合�
 | **退出阅读** | 按 `q` 或 DWM 快捷键 `Mod + Shift + c` | 退出时自动保存阅读进度（下次打开断点续读） |
 | **平铺窗口切换** | 按 DWM 快捷键 `Mod + Enter` | 将 Zathura 在 Master（左主屏）与 Stack（右副屏）间对调 |
 
+---
+
+## 阶段 10：拆分 sv8.nix 与配置解耦 (阶段记录)
+
+### 1. 待办事项归档 (Review R8 & R9)
+- **[待办 R8] 电池与深入节能调优备选项**：
+  - SATA 链路电源管理与运行时 PM (Runtime PM) 显式配置。
+  - 拔掉电源自动降低屏幕背光亮度规则。
+  - 空闲状态超时息屏与超时自动挂起联动。
+  - Firefox 媒体配置：禁用高耗能 AV1 软解解码，强制使用 VAAPI 硬件解码能效更优的编解码器。
+  - 蓝牙电源启动默认项优化：评估是否调整 `hardware.bluetooth.powerOnBoot = false`。
+  *(注：当前方案 A 基础功耗约 5.15W，上述措施作为后续追求极限续航时的可选优化方案)*
+- **[待办 R9] 公开仓库素材版权核查**：
+  - 仓库已推送到 GitHub 公开仓库，后续对 `wallpapers/` 目录下图片进行版权审计，仅保留自有拍摄、创作或无版权/CC0 授权壁纸。
+
+### 2. 重构前基线快照 (A6 校验基准)
+- **当前系统代数**：Generation 52
+- **重构前 toplevel drvPath**：
+  `/nix/store/9gylnhdjjpr5bgr45wcwdlpy2bd0whbc-nixos-system-sv8-26.05.20261015.26f4107.drv`
+
+### 3. A1 完整配置项归类对照表 (覆盖所有 .nix 与 pkgs/)
+
+判断依据准则：**「换一台没有这些硬件的电脑，这行配置会失效、有害或没有意义吗？」**
+- 是 → 归入 `hosts/sv8/sv8.nix`（或 `hosts/sv8/` 主机层）
+- 否 → 归入 `modules/`（通用模块库，供多台电脑共用）
+
+| 配置项 / 代码段 | 现有位置 | 拟定归类位置 | 归类理由与硬件依赖性说明 |
+| :--- | :--- | :--- | :--- |
+| `boot.kernelModules = [ "panasonic_laptop" ]` | `modules/hardware-sv8.nix` | `hosts/sv8/sv8.nix` §2 | [SV8] 松下笔记本独占 WMI/ACPI 平台驱动，在非松下电脑上加载无意义 |
+| `hardware.cpu.intel.updateMicrocode` | `modules/hardware-sv8.nix` | `hosts/sv8/sv8.nix` §1 | [SV8] 针对 Intel 处理器的微码注入，换 AMD 机器会报错或失效 |
+| `hardware.enableRedistributableFirmware = true` | `modules/hardware-sv8.nix` | `modules/base.nix` §1 | 通用固件包，现代笔记本 Wi-Fi/蓝牙等几乎普遍需要 |
+| `zramSwap = { enable = true; ... }` | `modules/hardware-sv8.nix` | `modules/base.nix` §1 | 通用系统内存动态压缩调优，与特定机器硬件无关 |
+| `services.fstrim = { enable = true; ... }` | `modules/hardware-sv8.nix` | `modules/base.nix` §1 | 通用 SSD 定期 TRIM 维护，跨机器通用的存储维护策略 |
+| `hardware.graphics.extraPackages = [ intel-media-driver libvdpau-va-gl ]` | `modules/graphics.nix` | `hosts/sv8/sv8.nix` §3 | [SV8] Intel Whiskey Lake 核显 VA-API 硬件解码器，在 AMD/Nvidia 设备上不适用 |
+| `services.xserver.videoDrivers = [ "modesetting" ]` | `modules/graphics.nix` | `hosts/sv8/sv8.nix` §3 | [SV8] Intel 核显推荐 modesetting，独显/AMD 平台可能选用不同驱动 |
+| `boot.kernelParams = [ "i915.enable_psr=0" ]` | `modules/graphics.nix` | `hosts/sv8/sv8.nix` §3 | [SV8] 专为松下 CF-SV8 i915 面板规避闪屏的内核补丁，其他机器无需也不应写死 |
+| `hardware.graphics.enable = true` | `modules/graphics.nix` | `modules/graphics.nix` | 通用图形渲染栈基础设置 |
+| `services.autorandr.enable = true` | `modules/graphics.nix` | `modules/graphics.nix` | 通用外接多显示器自动适配守护工具 |
+| `services.libinput.enable = false` | `modules/input.nix` | `hosts/sv8/sv8.nix` §4 | [SV8] 为让路松下 synaptics 圆盘驱动而特殊关闭；通用机型应保持 libinput 默认开启 |
+| `services.xserver.synaptics = { ... }` (圆盘旋转滚动) | `modules/input.nix` | `hosts/sv8/sv8.nix` §4 | [SV8] 松下 Let's Note 招牌圆形触控板专用驱动与参数，换其他电脑无此硬件 |
+| `environment.systemPackages = [ xf86-input-synaptics xinput ]` | `modules/input.nix` | `hosts/sv8/sv8.nix` §4 | [SV8] 松下圆盘调试工具，属于本机配套支撑 |
+| `services.xserver.xkb.layout = "us"`, `console.keyMap = "us"` | `modules/input.nix` | `modules/input.nix` | 个人习惯的美式键盘偏好，多电脑通用 |
+| `boot.kernelParams = [ "mem_sleep_default=deep" ]` | `modules/power.nix` | `hosts/sv8/sv8.nix` §5 | [SV8] CF-SV8 固件明确支持 S3 deep，换无 S3 机器强制 deep 可能导致无法唤醒 |
+| `services.upower.enable = true` | `modules/power.nix` | `modules/power.nix` | 通用电源电量事件监控守护服务 |
+| `services.logind.settings.Login` (合盖/电源键) | `modules/power.nix` | `modules/power.nix` | 个人电源按键与盒盖交互偏好，多电脑通用 |
+| `services.tlp` 调频、EPP、ASPM、Wi-Fi/声卡节能 | `modules/power.nix` | `modules/power.nix` | 个人续航与能效策略，多电脑通用 |
+| `services.tlp.settings.USB_DENYLIST = "3151:3020"` | `modules/power.nix` | `modules/power.nix` | 随身 2.4G 鼠标接收器防休眠，属于个人外设偏好（已在注释中明确标明） |
+| `services.xserver.dpi = 144` | `modules/desktop-dwm.nix` | `hosts/sv8/sv8.nix` §3 | [SV8] 针对 CF-SV8 12.1寸 1920x1200 屏幕定制的 1.5x 视觉 DPI；通用模块读取该选项（默认回退 96） |
+| `customSlstatus` 电池名称 `"BAT1"` | `pkgs/slstatus/config.h` | `hosts/sv8/sv8.nix` §6 | [SV8] 松下电池节点为 BAT1；通用模块定义 `my.batteryName` 选项（默认 "BAT0"），由 `replaceVars` 动态注入模板 |
+| `wallpaperPath` (Kurisu.png/wallpaper.png) | `modules/desktop-dwm.nix` | `modules/desktop-dwm.nix` | 个人桌面壁纸偏好，随仓库自包含分发 |
+| `startx`, DWM, st, dmenu, picom, slock 等桌面组件 | `modules/desktop-dwm.nix` | `modules/desktop-dwm.nix` | 通用 Suckless 平铺桌面环境，跨机器通用 |
+| `fonts` 与 `fonts.fontconfig.defaultFonts` | `modules/fonts-ime.nix` | `modules/fonts-ime.nix` | 个人 CJK 阅读与编程等宽字体偏好，跨机器通用 |
+| 基础服务 (NetworkManager, Bluetooth, PipeWire, fwupd, udisks2, portal) | `modules/services.nix` | `modules/services.nix` | 现代桌面基础环境，跨机器通用 |
+| 应用软件 (Firefox, PCManFM, Zathura, Steam, LocalSend 等) | `modules/services.nix` | `modules/services.nix` | 个人日常软件套件，跨机器通用 |
+| 代理服务 (Clash Verge Rev) | `modules/services.nix` | `modules/services.nix` | 个人网络代理方案，跨机器通用（待用户确认 R3 后微调注释或模式） |
+| Nix 设置、GC、boot.loader、用户 `flynn`、开发工具 | `modules/base.nix` | `modules/base.nix` | 个人开发与运维环境基线，跨机器通用（待用户确认 R7 后微调系统级包） |
+| `fileSystems`, `swapDevices`, `initrd` 驱动模块 | `hosts/sv8/hardware-configuration.nix` | `hosts/sv8/hardware-configuration.nix` | 主机底层硬件固有分区与驱动，属于主机层 |
+| `networking.hostName`, `system.stateVersion` | `hosts/sv8/default.nix` | `hosts/sv8/default.nix` | 主机标识层固有参数 |
+
+
