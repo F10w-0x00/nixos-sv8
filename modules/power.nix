@@ -60,6 +60,8 @@ in
   services.udev.extraRules = ''
     # 强制保持 Intel xHCI USB 控制器处于活跃供电状态 (power/control = on)
     ACTION=="add|change", SUBSYSTEM=="pci", ATTR{class}=="0x0c0330", ATTR{power/control}="on"
+    # 强制保持所有 USB 根集线器 (Hubs) 常开，禁止休眠 (power/control = on)
+    ACTION=="add|change", SUBSYSTEM=="usb", ATTR{bDeviceClass}=="09", ATTR{power/control}="on"
     # 强制保持 2.4G 鼠标无线接收器常开，禁止休眠
     ACTION=="add|change", SUBSYSTEM=="usb", ATTR{idVendor}=="3151", ATTR{idProduct}=="3020", ATTR{power/control}="on"
   '';
