@@ -56,12 +56,6 @@
     '';
   };
 
-  # [SV8] 松下圆盘触摸板配套调试工具（synclient 与 xinput）
-  environment.systemPackages = with pkgs; [
-    xf86-input-synaptics
-    xinput
-  ];
-
   # ── 5. 睡眠策略与内核参数 ────────────────────
   # [SV8] 专有内核参数统一注入（保持原厂基线顺序：睡眠在前、显示防闪屏在后）
   boot.kernelParams = [
@@ -76,5 +70,18 @@
   my.batteryName = "BAT1";
 
   # ── 7. 内置光驱 (DVD+R 刻录支持) ─────────────
-  # [SV8] 待任务 C 填入：CF-SV8 内置 SATA 刻录光驱支持
+  # [SV8] 松下 CF-SV8 内置 9.5mm 超薄 SATA 刻录光驱 (HL-DT-ST DVDRAM GUD0N)
+  # 赋予主用户直接免提权读写光驱设备 (/dev/sr0) 权限
+  users.users.flynn.extraGroups = [ "cdrom" ];
+
+  # ── 8. 本机特有硬件配套工具 ──────────────────
+  # [SV8] 集中声明本机硬件专属工具（遵循 Nix 属性名唯一性语法要求）
+  environment.systemPackages = with pkgs; [
+    # §4 松下圆盘触摸板调试工具 (synclient / xinput)
+    xf86-input-synaptics
+    xinput
+    # §7 内置光驱免提权刻录工具集 (growisofs / xorriso)
+    dvdplusrwtools
+    xorriso
+  ];
 }

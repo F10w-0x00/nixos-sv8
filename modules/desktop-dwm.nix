@@ -18,16 +18,6 @@ let
   customDwm = pkgs.dwm.override {
     conf = ../pkgs/dwm/config.h;
   };
-  customSt = pkgs.st.override {
-    patches = [
-      ../pkgs/st/patches/st-scrollback-0.9.2.diff
-      ../pkgs/st/patches/st-scrollback-mouse-0.9.2.diff
-      ../pkgs/st/patches/st-scrollback-mouse-altscreen-20220127-2c5edf2.diff
-      ../pkgs/st/patches/st-glyph-wide-support-20220411-ef05519.diff
-      ../pkgs/st/patches/st-clickurl-0.9.3.diff
-    ];
-    conf = builtins.readFile ../pkgs/st/config.h;
-  };
   customDmenu = pkgs.dmenu.override {
     conf = ../pkgs/dmenu/config.h;
   };
@@ -117,7 +107,6 @@ in
     programs.slock.enable = true; # 开启 setuid 权限支持校验用户密码
 
     environment.systemPackages = with pkgs; [
-      customSt # st 极简终端（集成回滚、宽字符、URL 点击补丁）
       customDmenu # dmenu 应用启动器
       customSlstatus # slstatus 状态栏
       brightnessctl # 屏幕背光调节工具

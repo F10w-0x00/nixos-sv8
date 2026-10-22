@@ -120,4 +120,13 @@ in
     neovim
     vscode
   ];
+
+  # ── 7. PKI 证书安全与吊销黑名单 ────────────────
+  # 剔除 eMudhra (emSign) 根证书（因 2026-10 曝光的中间 CA 私钥生成缺陷，私钥可被轻易逆向伪造，防范 TLS 中间人劫持）
+  security.pki.caCertificateBlacklist = [
+    "emSign ECC Root CA - C3"
+    "emSign ECC Root CA - G3"
+    "emSign Root CA - C1"
+    "emSign Root CA - G1"
+  ];
 }
