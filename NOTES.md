@@ -445,4 +445,15 @@ Zathura 采用极简设计，基于轻量快速的 MuPDF 渲染后端，配合�
 | `fileSystems`, `swapDevices`, `initrd` 驱动模块 | `hosts/sv8/hardware-configuration.nix` | `hosts/sv8/hardware-configuration.nix` | 主机底层硬件固有分区与驱动，属于主机层 |
 | `networking.hostName`, `system.stateVersion` | `hosts/sv8/default.nix` | `hosts/sv8/default.nix` | 主机标识层固有参数 |
 
+### 4. 任务 B：macOS 光标多层适配与排查表
+
+在 X11 + DWM 极简窗口管理器环境下，无统一桌面环境（GNOME/KDE）的后台守护，光标样式依赖 3 个层级协同生效：
+
+| 适配层级 | 涉及配置文件 | 生效目标程序 | 异常现象与排查方法 |
+| :--- | :--- | :--- | :--- |
+| **X11 资源数据库 (xrdb)** | `modules/appearance.nix` §3 (`Xcursor.theme` / `Xcursor.size`) | DWM 根窗口、st、dmenu、slock 等原生 X11 程序 | 若根窗口光标变为黑粗十字，检查 `xrdb -query \| grep -i xcursor`，并确认 `startx` 执行了 `xsetroot -cursor_name left_ptr` |
+| **全局环境变量 (XCURSOR_*)** | `modules/appearance.nix` §2 (`XCURSOR_THEME` / `XCURSOR_SIZE`) | Alacritty、VS Code (Electron)、Qt、Steam | 若终端或代码编辑器光标大小不匹配，检查 `echo $XCURSOR_THEME $XCURSOR_SIZE` 是否输出 `macOS 32` |
+| **GTK 3/4 设置 (settings.ini)** | `/etc/xdg/gtk-3.0/settings.ini`、`gtk-4.0` 与 `~/.config/gtk-*/settings.ini` | Firefox、PCManFM、Clash Verge (WebKitGTK) | 若浏览器内指针变成旧主题，检查用户级 `~/.config/gtk-3.0/settings.ini` 是否覆盖了系统级，并核查 `gtk-cursor-theme-name=macOS` |
+
+
 

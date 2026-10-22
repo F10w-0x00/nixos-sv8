@@ -11,5 +11,6 @@
     ./desktop-dwm.nix
     ./fonts-ime.nix
     ./services.nix
+    ./appearance.nix
   ];
 }

@@ -109,10 +109,10 @@
 - [x] A8：Git 提交与打标（重构前 `git tag pre-refactor`，完成后 `git commit` 并打标 `git tag sv8nix-split`）
 
 ### 第三部分：任务 B —— macOS 样式光标（任务 A 之后，独立一次 rebuild）
-- [ ] B1：确认选包 `apple-cursor` 并核实主题目录名
-- [ ] B2：新建 `modules/appearance.nix`，配置多层光标（`environment.variables`、xrdb、GTK 3/4 settings.ini、尺寸 32/推导）
+- [x] B1：确认选包 `apple-cursor` 并核实主题目录名
+- [x] B2：新建 `modules/appearance.nix`，配置多层光标（`environment.variables`、xrdb、GTK 3/4 settings.ini、尺寸 32/推导）
 - [ ] B3：用户 rebuild 并重启 X 会话后，执行只读命令检查并在 `NOTES.md` 建立「光标排查表」
-- [ ] B4：完善注释（首次出现的概念配说明）与回滚指南
+- [x] B4：完善注释（首次出现的概念配说明）与回滚指南
 
 ### 第四部分：任务 C —— DVD+R 刻录（任务 B 之后）
 - [ ] C0：严格坚守红线（绝不向光盘写数据，全流程普通用户，禁止 agent 写入调用）
