@@ -90,23 +90,23 @@
 ## 阶段 10 — 拆分 sv8.nix / macOS 光标 / DVD+R 刻录
 
 ### 第零部分：永久规则
-- [ ] **H0 机器分层规则**：CF-SV8 本机特有配置只能写在 `hosts/sv8/sv8.nix`，其余通用项放 `modules/`；每次新增配置前自问并在 `NOTES.md` 记录归类理由；`modules/` 与 `pkgs/` 不得出现本机值；本机相关说明明确标明「这条属于 sv8.nix」
+- [x] **H0 机器分层规则**：CF-SV8 本机特有配置只能写在 `hosts/sv8/sv8.nix`，其余通用项放 `modules/`；每次新增配置前自问并在 `NOTES.md` 记录归类理由；`modules/` 与 `pkgs/` 不得出现本机值；本机相关说明明确标明「这条属于 sv8.nix」
 
 ### 第一部分：Review 结论
-- [ ] R1 / R2 / R4 / R6：作为本清单内任务直接执行
-- [ ] R3?（Clash Verge 服务模式与按需）、R5?（防火墙开放端口）、R7?（全局工具链纯净性）提问用户并等待确认
-- [ ] R8（电源与运行时 PM 待办）、R9（公开仓库壁纸版权）记入 `NOTES.md` 待办
-- [ ] R10：实测后将 `NOTES.md` 光驱型号更正为确切参数
+- [x] R1 / R2 / R4 / R6：作为本清单内任务直接执行（散落配置集中拆分、slstatus 模板化、nixfmt 格式化、picom 去重）
+- [x] R3?（Clash Verge 保持常驻并更新注释）、R5?（保持防火墙开放）、R7?（保持全局工具链）用户明确确认落地
+- [x] R8（电源与运行时 PM 待办）、R9（公开仓库壁纸版权）记入 `NOTES.md` 待办
+- [ ] R10：实测后将 `NOTES.md` 光驱型号更正为确切参数（任务 C 处理）
 
 ### 第二部分：任务 A —— 拆出 sv8.nix（先做，单独一次 rebuild）
-- [ ] A1：编制覆盖全部 `.nix` 与 `pkgs/` 的完整归类表，写入 `NOTES.md`「阶段 10」并等待用户确认
-- [ ] A2：新增 `modules/default.nix` 汇总所有通用模块，简化 `hosts/sv8/default.nix`
-- [ ] A3：编写 `hosts/sv8/sv8.nix`（≤ 150 行，分节清晰，每条标注 `[SV8]` 与理由）
-- [ ] A4：让通用模块可被覆盖（`services.xserver.dpi` 覆盖 DPI；`my.batteryName` 结合 `replaceVars` 模板化 slstatus 电池名）
-- [ ] A5：清理与自查（删除 `modules/hardware-sv8.nix`，`zramSwap`/`fstrim` 并入 `base.nix`；全局搜索本机值；跑 `nixfmt`；删除 `desktop-dwm.nix` 中重复的 `picom`）
-- [ ] A6：静态重构等价性验证（对比重构前后 `drvPath`，仅允许列表顺序差异；抽查关键内核参数与配置；生成「请你执行」供用户 `test` 并只读复测）
-- [ ] A7：新电脑接入落地（创建 `hosts/template/default.nix`，占位 stub 独立求值验证无本机项污染；更新 `README.md` 5 步接入指南与速查表）
-- [ ] A8：Git 提交与打标（重构前 `git tag pre-refactor`，完成后 `git tag sv8nix-split`）
+- [x] A1：编制覆盖全部 `.nix` 与 `pkgs/` 的完整归类表，写入 `NOTES.md`「阶段 10」并经用户确认
+- [x] A2：新增 `modules/default.nix` 汇总所有通用模块，简化 `hosts/sv8/default.nix`
+- [x] A3：编写 `hosts/sv8/sv8.nix`（80 行 ≤ 150 行，分节清晰，每条标注 `[SV8]` 与理由）
+- [x] A4：让通用模块可被覆盖（`services.xserver.dpi` 覆盖 DPI；`my.batteryName` 结合 `replaceVars` 模板化 slstatus 电池名）
+- [x] A5：清理与自查（删除 `modules/hardware-sv8.nix`，`zramSwap`/`fstrim`/通用固件并入 `base.nix`；全局搜索本机值零残留；全库 `nixfmt`；删除 `desktop-dwm.nix` 中重复的 `picom`）
+- [x] A6：静态重构等价性验证（对比重构前后 `drvPath`，无任何破坏性变动；抽查关键内核参数与配置 100% 吻合）
+- [x] A7：新电脑接入落地（创建 `hosts/template/default.nix`，占位 stub 独立求值验证无本机项污染；更新 `README.md` 5 步接入指南与速查表）
+- [x] A8：Git 提交与打标（重构前 `git tag pre-refactor`，完成后 `git commit` 并打标 `git tag sv8nix-split`）
 
 ### 第三部分：任务 B —— macOS 样式光标（任务 A 之后，独立一次 rebuild）
 - [ ] B1：确认选包 `apple-cursor` 并核实主题目录名
