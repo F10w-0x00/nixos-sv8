@@ -29,10 +29,9 @@
       "keyColor": "cyan"
     },
     {
-      "type": "command",
+      "type": "uptime",
       "key": "├── 󰔛",
-      "keyColor": "cyan",
-      "text": "d=$(( ($(date +%s) - $(date -d $(date -d @$(stat -c %W /lost+found 2>/dev/null || echo 1792245946) +%Y-%m-%d) +%s)) / 86400 )); echo \"$d day$([ $d -ne 1 ] && echo s)\""
+      "keyColor": "cyan"
     },
     {
       "type": "shell",
