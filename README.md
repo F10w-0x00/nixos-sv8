@@ -19,8 +19,8 @@
    - 通用系统服务与开发环境：负责网络、音频、PCManFM 文件管理、Zathura PDF 查看器、Git 以及按项目轻量加载环境的 `direnv`。
 
 ### 2. 最容易改错的 3 个地方（避坑指南）
-1. **修改 DWM / st 源码后忘记 rebuild 或误加进 packages**：
-   - `dwm` 与 `st` 是通过 NixOS 模块内部的 `.override` 直接使用源码编译并注入会话的。**绝对不要**把 `dwm` 写入 `environment.systemPackages`，否则定制的 `config.h` 会被官方默认二进制覆盖而失效。修改 `pkgs/*/config.h` 后，必须执行 `sudo nixos-rebuild switch --flake ~/nixos-config#sv8` 重新编译生效。
+1. **修改 DWM 源码后忘记 rebuild 或误加进 packages**：
+   - DWM 是通过 NixOS 模块内部的 `.override` 直接使用源码编译并注入会话的。**绝对不要**把 `dwm` 写入 `environment.systemPackages`，否则定制的 `config.h` 会被官方默认二进制覆盖而失效。修改 `pkgs/dwm/config.h` 后，必须执行 `sudo nixos-rebuild switch --flake ~/nixos-config#sv8` 重新编译生效。
 2. **新增文件未执行 `git add`**：
    - Nix Flake 具有极高的严谨性，仅能感知被 Git 跟踪的文件。若在仓库中新增了模块、补丁或图片，**必须先运行 `git add <新文件>`**，否则 rebuild 时会直接报错找不到该文件。
 3. **触控板驱动冲突**：
@@ -33,12 +33,13 @@
 ```
 ~/nixos-config
 ├── flake.nix / flake.lock            # Flake 入口（导出 sv8 与 template 主机）与依赖锁文件
-├── README.md                          # 本说明文档、改配置速查表、回滚指南、5分钟导览
+├── README.md                          # 说明文档、改配置速查表、回滚指南、5分钟导览
 ├── CHECKLIST.md                       # 各阶段任务执行活副本（全项已验证）
 ├── NOTES.md                           # 硬件全功能对照表、实测数据、决策记录与原理解析
+├── docs/                              # 系统与硬件专项指南
+│   └── DVD-BURNING.md                 # DVD+R 光盘刻录、防睡眠与数据校验指南
 ├── wallpapers/                        # 桌面壁纸资源目录（仓库自包含，随构建打包进系统）
-├── dotfiles/                          # 用户级应用核心配置 (fastfetch, alacritty, Code, mpv, zathura)
-├── scripts/                           # 辅助脚本（标准化电池放电功率中位数采样）
+├── dotfiles/                          # 用户级应用核心配置 (fastfetch, alacritty, mpv, zathura)
 ├── hosts/
 │   ├── sv8/
 │   │   ├── default.nix                # SV8 主机入口（只做 imports、hostName、stateVersion）
@@ -49,13 +50,14 @@
 │       └── hardware-configuration.nix # 硬件占位配置（新机部署时由扫描生成覆盖）
 ├── modules/
 │   ├── default.nix                    # 通用模块统一汇总入口（多主机一行即可引入全部通用模块）
-│   ├── base.nix                       # Nix 设置、引导上限、通用固件、ZRAM 内存优化、fstrim、时区、用户
+│   ├── base.nix                       # Nix 设置、引导上限、通用固件、ZRAM 内存优化、fstrim、时区、用户与 PKI
 │   ├── graphics.nix                   # 通用图形栈支持与 autorandr 外接显示器自动配置
 │   ├── input.nix                      # 通用美式 US 键盘布局与控制台键位（通用机型 libinput 默认开启）
-│   ├── power.nix                      # 通用电源监控 (UPower)、logind 电源事件、TLP 节能策略与外设白名单
+│   ├── power.nix                      # 通用电源监控 (UPower)、logind 电源事件、TLP 节能策略与外设防休眠
 │   ├── desktop-dwm.nix                # DWM 窗口管理器、读取 host DPI（默认 96）、壁纸、picom、slock
 │   ├── fonts-ime.nix                  # 中日韩全套字体（Noto CJK）、Fontconfig 回退优先级（免打字输入法）
-│   └── services.nix                   # NetworkManager、蓝牙、PipeWire 音频、PCManFM、Zathura、Clash Verge
+│   ├── services.nix                   # NetworkManager、蓝牙、PipeWire 音频、PCManFM、Zathura、Clash Verge
+│   └── appearance.nix                 # macOS 样式光标主题 (apple-cursor)、X11/XRDB 与 GTK3/4 样式统一
 └── pkgs/                              # 本地自定义包与源码配置树
     ├── dwm/config.h                   # DWM 核心按键绑定与工作区 (1~6)
     ├── dmenu/config.h                 # dmenu 配色与字体
@@ -72,7 +74,7 @@
 | **开机引导项保留代数** | `modules/base.nix` | 顶部 `let bootLimit = 3;` |
 | **用户与 sudo 权限 / 用户组** | `modules/base.nix` | §5. 用户与权限 (`users.users.flynn`) |
 | **系统预装 CLI 工具 / 开发包** | `modules/base.nix` | §6. 基础系统工具 (`systemPackages`) |
-| **图形文件管理 / PDF / 日常软件** | `modules/services.nix` | §4. 存储、桌面支持与日常应用 |
+| **图形文件管理 / PDF / 日常软件** | `modules/services.nix` | §6. PCManFM、Zathura、MPV 等日常应用 |
 | **键盘映射布局 (标准美式 US)** | `modules/input.nix` | §1. 键盘布局 (`xkb.layout`) |
 | **圆形滚动灵敏度 / 触发方式** | `hosts/sv8/sv8.nix` | §4. 圆盘触摸板 (`CircScrollDelta = "0.2"`) [这条属于 sv8.nix] |
 | **屏幕缩放比例 (全局 DPI)** | `hosts/sv8/sv8.nix` | §3. 显示设置 (`services.xserver.dpi = 144`) [这条属于 sv8.nix] |
@@ -80,6 +82,8 @@
 | **状态栏电池节点名称** | `hosts/sv8/sv8.nix` | §6. 电池节点名称 (`my.batteryName = "BAT1"`) [这条属于 sv8.nix] |
 | **内置光驱与 DVD 刻录** | `hosts/sv8/sv8.nix` | §7. 内置光驱与免提权刻录工具集 (`dvdplusrwtools` / `xorriso`)，指南见 [docs/DVD-BURNING.md](docs/DVD-BURNING.md) [这条属于 sv8.nix] |
 | **合盖睡眠与电源键行为** | `modules/power.nix` | §1. 睡眠模式与合盖锁屏 (`services.logind`) |
+| **USB 供电与外设防休眠** | `modules/power.nix` | §3. 内核级与 Udev 物理锁 (`usbcore.autosuspend=-1`) |
+| **鼠标指针主题与尺寸** | `modules/appearance.nix` | §1~§3 (`cursorTheme = "macOS"`, `cursorSize = 32`) |
 | **桌面壁纸图片** | `wallpapers/` 目录 | 替换图片或修改 `modules/desktop-dwm.nix` 的 `wallpaperPath` |
 | **DWM 快捷键、窗口排版** | `pkgs/dwm/config.h` | `keys[]` 数组定义 |
 | **终端模拟器 (Alacritty) 字体/字号/边距** | `~/.config/alacritty.toml` | `[font]` 与 `[window.padding]`（热加载免编译） |
@@ -190,7 +194,7 @@ sudo nix-store --optimise
    sudo passwd flynn
    ```
 5. **重启生效**：
-   系统开机自动以 tty1 登录并拉起 DWM 桌面，壁纸、字体、终端回滚补丁、松下圆盘旋转滚动均 100% 还原。
+   系统开机自动以 tty1 登录并拉起 DWM 桌面，壁纸、字体、Alacritty GPU 极速终端、松下圆盘旋转滚动均 100% 还原。
 
 ---
 

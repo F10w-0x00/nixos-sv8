@@ -272,7 +272,7 @@
 
 ### 1. 系统级配置 vs 用户级配置现状边界
 - **系统级环境（100% 声明式且可复现）**：
-  - DWM 窗口管理器、st 终端、slstatus 状态栏、dmenu 启动器：源码与 `config.h` 已嵌入仓库并通过 `.override` 编译，不产生或依赖 `~/.config` 文件。
+  - DWM 窗口管理器、Alacritty 终端、slstatus 状态栏、dmenu 启动器：源码与配置已嵌入仓库并通过 Nix 声明注入，不产生或依赖 `~/.config` 文件。
   - 会话初始化：`startx`、144 DPI 全局缩放、picom 半透明、dunst 通知、slock 锁屏、壁纸自包含加载、默认浏览器与 MIME 关联：全部由 `modules/` 声明并生成全局配置，重装或迁移新机 100% 自动还原。
 - **用户级环境（`~/.config/`）**：
   - 默认情况下，NixOS 的操作系统级 Flake 不接管 `$HOME/.config/`。
@@ -285,7 +285,7 @@
      - 关键配置：`"files.simpleDialog.enable": true`（彻底消除保存/打开文件时的白屏卡死现象）。
      - 个人偏好：`"workbench.colorTheme": "Tokyo Night Storm"`、`"editor.fontSize": 18`、C/C++ runner 脚本。
   2. **Alacritty**：`/home/flynn/.config/alacritty.toml`
-     - 个人偏好：`size = 13.0`、JetBrainsMono Nerd Font、`opacity = 0.85`、无边框全屏模式。
+     - 个人偏好：`size = 13.0`、JetBrainsMono Nerd Font、`opacity = 1.0`、无边框窗口模式 (Windowed)。
   3. **Fastfetch**：`/home/flynn/.config/fastfetch/config.jsonc`
      - 个人偏好：自定义 ASCII 图标、基于首装日期的使用天数动态计算与磁盘展示。
   4. **Btop**：`/home/flynn/.config/btop/btop.conf`

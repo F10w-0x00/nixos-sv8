@@ -38,7 +38,7 @@ in
   environment.pathsToLink = [ "/share/icons" ];
 
   # ── 2. 全局环境变量 (XCURSOR_*) ─────────────────
-  # XCURSOR_* 是 X11 客户端（包括 Alacritty、VS Code/Electron、Qt、Steam 等）读取光标的标准环境变量
+  # XCURSOR_* 是 X11 客户端（包括 Alacritty、VS Code/Electron、Qt 等）读取光标的标准环境变量
   environment.variables = {
     XCURSOR_THEME = cursorTheme;
     XCURSOR_SIZE = toString cursorSize;
