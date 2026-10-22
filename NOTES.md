@@ -432,7 +432,7 @@ Zathura 采用极简设计，基于轻量快速的 MuPDF 渲染后端，配合�
 | `services.upower.enable = true` | `modules/power.nix` | `modules/power.nix` | 通用电源电量事件监控守护服务 |
 | `services.logind.settings.Login` (合盖/电源键) | `modules/power.nix` | `modules/power.nix` | 个人电源按键与盒盖交互偏好，多电脑通用 |
 | `services.tlp` 调频、EPP、ASPM、Wi-Fi/声卡节能 | `modules/power.nix` | `modules/power.nix` | 个人续航与能效策略，多电脑通用 |
-| `services.tlp.settings.USB_DENYLIST = "3151:3020"` | `modules/power.nix` | `modules/power.nix` | 随身 2.4G 鼠标接收器防休眠，属于个人外设偏好（已在注释中明确标明） |
+| `services.tlp.settings.USB_AUTOSUSPEND = 0` | `modules/power.nix` | `modules/power.nix` | 彻底关闭 USB 自动挂起，杜绝 2.4G 无线鼠标接收器延迟与间歇卡死 |
 | `services.xserver.dpi = 144` | `modules/desktop-dwm.nix` | `hosts/sv8/sv8.nix` §3 | [SV8] 针对 CF-SV8 12.1寸 1920x1200 屏幕定制的 1.5x 视觉 DPI；通用模块读取该选项（默认回退 96） |
 | `customSlstatus` 电池名称 `"BAT1"` | `pkgs/slstatus/config.h` | `hosts/sv8/sv8.nix` §6 | [SV8] 松下电池节点为 BAT1；通用模块定义 `my.batteryName` 选项（默认 "BAT0"），由 `replaceVars` 动态注入模板 |
 | `wallpaperPath` (Kurisu.png/wallpaper.png) | `modules/desktop-dwm.nix` | `modules/desktop-dwm.nix` | 个人桌面壁纸偏好，随仓库自包含分发 |

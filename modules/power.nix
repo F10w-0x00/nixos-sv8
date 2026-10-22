@@ -45,9 +45,8 @@ in
       SOUND_POWER_SAVE_ON_AC = 0;
       SOUND_POWER_SAVE_ON_BAT = 1;
 
-      # USB 全局自动挂起（个人常用 2.4G 鼠标接收器加入白名单，防止误休眠产生延迟）
-      USB_AUTOSUSPEND = 1;
-      USB_DENYLIST = "3151:3020";
+      # 彻底关闭 USB 自动休眠（根除 2.4G 无线鼠标接收器与外接外设延迟、卡顿与断连）
+      USB_AUTOSUSPEND = 0;
     };
   };
 }
