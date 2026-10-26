@@ -459,6 +459,9 @@ Zathura 采用极简设计，基于轻量快速的 MuPDF 渲染后端，配合�
     3. Udev 规则级：`services.udev.extraRules` 强制保持 PCI USB 主控 (`0x0c0330`)、USB 集线器 (`09`) 与 2.4G 接收器 `power/control = on`；
     4. X11 驱动级 (`modules/input.nix`)：屏蔽 `YICHIP 2.4G Receiver Consumer Control` 误注册为第二鼠标，消除 X11 双指针事件争抢导致的间歇性挂起。
   - **实测验收 (2026-10-22)**：用户在重启 X 会话后进行连续滑动与使用实测，确认间歇性冻结/停滞故障彻底消除。
+  - **精细化节能重构 (2026-10-26)**：
+    - **背景**：此前证实鼠标硬件卡顿主因为电池电量耗尽（实测仅 0.9V，换新电池已彻底恢复），全局关闭 USB 休眠与锁定 xHCI 会连坐内置外设（LTE/Webcam/Bluetooth/Hubs）并阻断 CPU Package 进入深层休眠（Pkg C8/C10），导致离电待机产生约 1W 额外暗电功耗。
+    - **靶向重构方案**：移除全局 `usbcore.autosuspend=-1`、TLP xHCI 黑名单与通用 Hub 锁，改为纯粹针对 2.4G 接收器硬件 ID（`3151:3020`）执行 `power/control = on` 与 TLP `USB_DENYLIST`。在确保鼠标零休眠丢帧的同时，完全释放整机低功耗待机能力。
 
 ### 7. 软件精简与彻底垃圾回收 (Steam & Piliplus)
 

@@ -45,24 +45,15 @@ in
       SOUND_POWER_SAVE_ON_AC = 0;
       SOUND_POWER_SAVE_ON_BAT = 1;
 
-      # 彻底关闭 USB 自动休眠并锁定 2.4G 接收器与主控制器
-      USB_AUTOSUSPEND = 0;
-      USB_DENYLIST = "3151:3020"; # 锁定 2.4G 鼠标接收器
-      RUNTIME_PM_DENYLIST = "00:14.0"; # 锁定 Intel xHCI USB 主控制器，禁止 PCI 运行时休眠
+      # 精准 USB 电源管理：开启全局自动休眠，仅将 2.4G 接收器列入黑名单保活
+      USB_AUTOSUSPEND = 1;
+      USB_DENYLIST = "3151:3020"; # 仅锁定 2.4G 鼠标接收器，防止鼠标休眠丢帧
     };
   };
 
-  # ── 3. 内核级与 udev 物理防休眠锁 ───────────
-  # 内核级全局关闭 USB 自动休眠（usbcore.autosuspend=-1）
-  boot.kernelParams = [ "usbcore.autosuspend=-1" ];
-
-  # 强制锁定 USB 主控制器与 2.4G 接收器供电，根除间歇性停滞卡死
+  # ── 3. Udev 精准靶向供电规则 ────────────────
+  # 仅针对 2.4G 鼠标无线接收器（3151:3020）保持活跃供电，放行主控制器与内置外设休眠
   services.udev.extraRules = ''
-    # 强制保持 Intel xHCI USB 控制器处于活跃供电状态 (power/control = on)
-    ACTION=="add|change", SUBSYSTEM=="pci", ATTR{class}=="0x0c0330", ATTR{power/control}="on"
-    # 强制保持所有 USB 根集线器 (Hubs) 常开，禁止休眠 (power/control = on)
-    ACTION=="add|change", SUBSYSTEM=="usb", ATTR{bDeviceClass}=="09", ATTR{power/control}="on"
-    # 强制保持 2.4G 鼠标无线接收器常开，禁止休眠
     ACTION=="add|change", SUBSYSTEM=="usb", ATTR{idVendor}=="3151", ATTR{idProduct}=="3020", ATTR{power/control}="on"
   '';
 }
