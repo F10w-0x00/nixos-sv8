@@ -38,17 +38,17 @@
 
   programs.firefox.enable = true;
 
-  # 统一默认浏览器关联至 Firefox
+  # 统一默认浏览器关联至 Google Chrome
   xdg.mime.defaultApplications = {
-    "text/html" = "firefox.desktop";
-    "x-scheme-handler/http" = "firefox.desktop";
-    "x-scheme-handler/https" = "firefox.desktop";
-    "x-scheme-handler/about" = "firefox.desktop";
-    "x-scheme-handler/unknown" = "firefox.desktop";
+    "text/html" = "google-chrome.desktop";
+    "x-scheme-handler/http" = "google-chrome.desktop";
+    "x-scheme-handler/https" = "google-chrome.desktop";
+    "x-scheme-handler/about" = "google-chrome.desktop";
+    "x-scheme-handler/unknown" = "google-chrome.desktop";
   };
 
   environment.sessionVariables = {
-    BROWSER = "firefox";
+    BROWSER = "google-chrome-stable";
     TERMINAL = "alacritty";
     MOZ_USE_XINPUT2 = "1"; # 启用 XInput2 高精度事件流，彻底消除浏览器中鼠标划过超链接时的事件阻塞与阻滞感
   };
