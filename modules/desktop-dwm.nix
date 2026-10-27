@@ -98,8 +98,27 @@ in
     };
 
     # ── 4. 桌面配套工具 ──────────────────────────
-    # 禁用 picom 桌面合成器：DWM 平铺桌面无需半透明与阴影特效，禁用可彻底消除文本划选与复制时的 VSync 渲染延迟
-    services.picom.enable = false;
+    # 仅负责 VSync 垂直同步的极简 picom 合成器：
+    # 彻底杜绝网页与 PDF 快速滑动时的画面撕裂（Screen Tearing）
+    # 彻底关闭所有阴影、渐变淡入淡出、窗口透明与毛玻璃等重度特效，保持零视觉延迟与最低功耗
+    services.picom = {
+      enable = true;
+      backend = "glx"; # 采用 OpenGL 硬件渲染后端（Intel UHD 620 核显成熟稳定）
+      vSync = true; # 强制锁死 60Hz 垂直同步，根除滚动撕裂
+      shadow = false; # 彻底禁用窗口阴影
+      fade = false; # 彻底禁用窗口淡入淡出动画
+      activeOpacity = 1.0;
+      inactiveOpacity = 1.0;
+      settings = {
+        # 增量渲染优化：仅在屏幕区域发生像素变化时重绘对应区域，杜绝全屏无谓刷新
+        use-damage = true;
+        # 全屏应用/视频播放时自动解除重定向（直通渲染），杜绝输入延迟
+        unredir-if-possible = true;
+        # 优化 GLX 性能与显存交换
+        glx-no-stencil = true;
+        glx-no-rebind-pixmap = true;
+      };
+    };
 
     programs.slock.enable = true; # 开启 setuid 权限支持校验用户密码
 
