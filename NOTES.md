@@ -580,7 +580,8 @@ Zathura 采用极简设计，基于轻量快速的 MuPDF 渲染后端，配合�
   - 移除 `services.nix` 中已过时的 Firefox 环境变量 `MOZ_USE_XINPUT2`；
   - 移除 `fonts-ime.nix` 中已被 Noto CJK 完整取代的远古中文字体（文泉驿正黑/微米黑）；
   - 移除 `pkgs/dwm/config.h` 中未安装应用（GIMP）的平铺浮动规则；
-  - 经用户确认保留 `services.nix` 中注释备查的 Clash Verge 代码块。
+  - 经用户确认保留 `services.nix` 中注释备查的 Clash Verge 代码块；
+  - 顶栏状态栏 (slstatus) 优化：[WIFI] 成功连接时不再显示勾号，改为通过 NetworkManager 直接提取并显示当前连接的 Wi-Fi 具体名称 (SSID)，未连接时显示 ✗。
 
 
 

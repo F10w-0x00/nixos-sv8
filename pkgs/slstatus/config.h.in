@@ -13,7 +13,7 @@ static const struct arg args[] = {
 	/* function     format               argument */
 	{ cpu_perc,      "[CPU %s%%] ",       NULL },
 	{ ram_perc,      "[RAM %s%%] ",       NULL },
-	{ run_command,   "[WIFI %s] ",        "grep -qs up /sys/class/net/wl*/operstate && echo ✓ || echo ✗" },
+	{ run_command,   "[WIFI %s] ",        "nmcli -t -f name,type c show --active | awk -F: '$NF==\"802-11-wireless\"{sub(/:802-11-wireless$/, \"\"); print; found=1; exit} END{if(!found) print \"✗\"}'" },
 	{ battery_perc,  "[BAT %s%%] ",       "@batteryName@" },
 	{ datetime,      "[%s]",              "%H:%M" },
 };
