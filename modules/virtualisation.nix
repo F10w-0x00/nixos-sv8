@@ -1,5 +1,5 @@
-# modules/virtualisation.nix — 虚拟化与虚拟机支持 (KVM + Libvirt + Virt-Manager)
-# 提供硬件级虚拟化加速、UEFI (OVMF) 固件、虚拟 TPM 2.0 (swtpm)、USB 重定向与 VirtIO 驱动
+# modules/virtualisation.nix — 虚拟化与容器支持 (KVM + Libvirt + Docker)
+# 提供硬件级虚拟化加速、UEFI 固件、虚拟 TPM 2.0、Docker 容器引擎与 VirtIO 驱动
 { pkgs, ... }:
 
 {
@@ -12,19 +12,32 @@
     };
   };
 
-  # ── 2. Virt-Manager 图形管理器与 DConf ──────────────
+  # ── 2. Docker 容器引擎 ─────────────────────────────
+  virtualisation.docker = {
+    enable = true;
+    autoPrune = {
+      enable = true;          # 定期自动清理悬空容器、镜像与缓存，节约磁盘空间
+      dates = "weekly";
+    };
+  };
+
+  # ── 3. Virt-Manager 图形管理器与 DConf ──────────────
   programs.virt-manager.enable = true;
   programs.dconf.enable = true;
 
-  # ── 3. SPICE USB 重定向支持 ─────────────────────────
+  # ── 4. SPICE USB 重定向支持 ─────────────────────────
   virtualisation.spiceUSBRedirection.enable = true;
 
-  # ── 4. 用户组权限 ──────────────────────────────────
-  # 赋予主用户管理虚拟机权限（无需每次提权输入 root 密码）
-  users.users.flynn.extraGroups = [ "libvirtd" ];
+  # ── 5. 用户组权限 ──────────────────────────────────
+  # 赋予主用户管理虚拟机与 Docker 权限（免 sudo 执行 docker 命令）
+  users.users.flynn.extraGroups = [
+    "libvirtd"
+    "docker"
+  ];
 
-  # ── 5. 虚拟化配套客户端与驱动工具 ──────────────────
+  # ── 6. 虚拟化与容器配套客户端工具 ──────────────────
   environment.systemPackages = with pkgs; [
+    docker-compose         # 多容器编排工具
     virt-viewer            # SPICE / VNC 客户端
     spice                  # SPICE 协议核心
     spice-gtk              # GTK SPICE 客户端支持库
