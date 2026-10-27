@@ -63,7 +63,21 @@
     "mem_sleep_default=deep"
     # [SV8] §3 显示：禁用 Intel 核显 Panel Self Refresh (PSR)，杜绝屏幕偶发闪屏
     "i915.enable_psr=0"
+    # [SV8] 禁用硬件与软件看门狗（Watchdog）定时器，消除 CPU 周期中断唤醒，加速开关机
+    "nowatchdog"
   ];
+
+  # [SV8] 彻底屏蔽 Intel 专有看门狗驱动模块，免除内核初始化与关机交互延迟
+  boot.blacklistedKernelModules = [
+    "iTCO_wdt"
+    "mei_wdt"
+    "intel_oc_wdt"
+  ];
+
+  # [SV8] 关机与重启时彻底禁用 systemd 硬件看门狗交互，实现瞬间切断断电
+  systemd.settings.Manager = {
+    RebootWatchdogSec = "0s";
+  };
 
   # ── 6. 电池节点名称 ──────────────────────────
   # [SV8] 松下主板 ACPI 固件将机身电池命名为 BAT1（通用机型通常为 BAT0）
