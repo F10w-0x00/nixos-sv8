@@ -134,6 +134,7 @@
 - [x] 引入 Google Chrome 浏览器并固化为系统默认浏览器（`modules/base.nix`、`modules/services.nix`）
 - [x] 全局审查与冗余精简（按 Review 结论清理冗余关闭项、重复微码、过时字体与样例浮动规则）
 - [x] 系统全量更新与秒级回滚标准工作流文档化（`README.md`、`NOTES.md`）
-- [x] 正式发布 v1.0 里程碑并打标 Git Tag `v1.0`
+- [x] 顶部状态栏体验终极打磨：[WIFI] 成功连接时动态展示真实 SSID，未连接显示 ✗（`pkgs/slstatus/config.h.in`）
+- [x] 正式发布终极里程碑：现在才是真正的 V1.0（打标 Git Tag `v1.0`）
 
 
