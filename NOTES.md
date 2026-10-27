@@ -508,6 +508,36 @@ Zathura 采用极简设计，基于轻量快速的 MuPDF 渲染后端，配合�
   - 根治：在 `hosts/sv8/sv8.nix` §8 补全 `cdrkit`（原生提供 `mkisofs` 与 `genisoimage`），实现系统级免 nix-shell 开箱即用直刻；
   - 文档完善：在 `docs/DVD-BURNING.md` 标明 Volume ID 长度上限（≤ 32 字符）与文件夹路径带空格时强制双引号规范。
 
+### 11. 硬件级虚拟化 (KVM + Libvirt + Virt-Manager) 落地
+
+- **需求背景**：用户需要在松下 CF-SV8 上运行 `en-us_windows_10_iot_enterprise_ltsc_2021_x64_dvd_257ad90f` 虚拟机以满足特定 Windows 业务需求。
+- **架构方案 (`modules/virtualisation.nix`)**：
+  - 虚拟化底层：Linux 原生 KVM + 精简裁剪版 `pkgs.qemu_kvm`（仅保留 x86_64 宿主架构支持，节约空间与下载带宽）；
+  - 固件与安全：UEFI OVMF 默认固件集成，`swtpm` 虚拟 TPM 2.0 支持；
+  - 驱动支持：构建软链接 `/run/current-system/sw/share/virtio-win/virtio-win.iso`，提供开箱即用的 Red Hat VirtIO 高性能虚拟化驱动（磁盘与千兆网卡）；
+  - 图形交互：Virt-Manager + SPICE 协议（USB 重定向、双向剪贴板与分辨率自适应）；
+  - 驱动归属解析：明确虚拟机硬件全由 QEMU 模拟与 VirtIO 驱动接管，严禁安装松下官网驱动与第三方驱动工具。完整指南固化于 `docs/VIRTUALIZATION.md`。
+
+### 12. Docker 容器引擎与 Compose 多编排集成
+
+- **技术实现**：
+  - `virtualisation.docker.enable = true;`：启用 Docker 守护进程；
+  - `autoPrune`：启用每周自动垃圾回收，防止悬空镜像与构建缓存吞噬固态硬盘空间；
+  - 免 sudo 支持：主用户加入 `docker` 用户组；
+  - 编排工具：集成 `pkgs.docker-compose`，支持标准 `docker compose` 与 `docker-compose` 指令。
+  - 详细运维手册固化于 `docs/DOCKER.md`。
+
+### 13. 显示平滑调优 (VSync picom) 与 Watchdog 彻底钝化
+
+- **VSync 垂直同步消除撕裂 (`modules/desktop-dwm.nix`)**：
+  - 针对网页/PDF 快速滑动时的横向画面断层（Screen Tearing），配置极简轻量级 `picom`；
+  - 采用 `backend = "glx"; vSync = true;` 锁死 60Hz 垂直双缓冲，同时启用 `use-damage = true;` 与 `unredir-if-possible = true;`；
+  - 彻底关闭阴影、渐变淡入淡出、透明度计算，保持 0 视觉延迟与最低功耗。
+- **Watchdog 彻底钝化 (`hosts/sv8/sv8.nix`)**：
+  - 内核参数加入 `nowatchdog`，关闭内核 NMI 锁检测；
+  - 黑名单屏蔽 `iTCO_wdt`、`mei_wdt`、`intel_oc_wdt`，消除 CPU 周期中断唤醒，加速关机断电流程。
+
+
 
 
 

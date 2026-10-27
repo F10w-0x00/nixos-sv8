@@ -37,7 +37,9 @@
 ├── CHECKLIST.md                       # 各阶段任务执行活副本（全项已验证）
 ├── NOTES.md                           # 硬件全功能对照表、实测数据、决策记录与原理解析
 ├── docs/                              # 系统与硬件专项指南
-│   └── DVD-BURNING.md                 # DVD+R 光盘刻录、防睡眠与数据校验指南
+│   ├── DVD-BURNING.md                 # DVD+R 光盘刻录、防睡眠与数据校验指南
+│   ├── VIRTUALIZATION.md              # KVM / QEMU / Virt-Manager 与 Windows 虚拟机完整指南
+│   └── DOCKER.md                      # Docker 容器引擎操作手册与 Cheat Sheet
 ├── wallpapers/                        # 桌面壁纸资源目录（仓库自包含，随构建打包进系统）
 ├── dotfiles/                          # 用户级应用核心配置 (fastfetch, alacritty, mpv, zathura)
 ├── hosts/
@@ -57,7 +59,8 @@
 │   ├── desktop-dwm.nix                # DWM 窗口管理器、读取 host DPI（默认 96）、壁纸、picom、slock
 │   ├── fonts-ime.nix                  # 中日韩全套字体（Noto CJK）、Fontconfig 回退优先级（免打字输入法）
 │   ├── services.nix                   # NetworkManager、蓝牙、PipeWire 音频、PCManFM、Zathura、Clash Verge
-│   └── appearance.nix                 # macOS 样式光标主题 (apple-cursor)、X11/XRDB 与 GTK3/4 样式统一
+│   ├── appearance.nix                 # macOS 样式光标主题 (apple-cursor)、X11/XRDB 与 GTK3/4 样式统一
+│   └── virtualisation.nix             # KVM、Libvirt、Virt-Manager、Windows VirtIO 驱动与 Docker 容器引擎
 └── pkgs/                              # 本地自定义包与源码配置树
     ├── dwm/config.h                   # DWM 核心按键绑定与工作区 (1~6)
     ├── dmenu/config.h                 # dmenu 配色与字体
@@ -81,6 +84,8 @@
 | **S3 深度睡眠 / 内核参数** | `hosts/sv8/sv8.nix` | §5. 睡眠与内核参数 (`mem_sleep_default=deep`) [这条属于 sv8.nix] |
 | **状态栏电池节点名称** | `hosts/sv8/sv8.nix` | §6. 电池节点名称 (`my.batteryName = "BAT1"`) [这条属于 sv8.nix] |
 | **内置光驱与 DVD 刻录** | `hosts/sv8/sv8.nix` | §7. 内置光驱与免提权刻录工具集 (`dvdplusrwtools` / `xorriso`)，指南见 [docs/DVD-BURNING.md](docs/DVD-BURNING.md) [这条属于 sv8.nix] |
+| **KVM / Windows 虚拟机配置** | `modules/virtualisation.nix` | §1~§5 QEMU/KVM、Virt-Manager、VirtIO 驱动，指南见 [docs/VIRTUALIZATION.md](docs/VIRTUALIZATION.md) |
+| **Docker 容器引擎与编排** | `modules/virtualisation.nix` | §2 Docker 服务、autoPrune 定期清理与 docker-compose，指南见 [docs/DOCKER.md](docs/DOCKER.md) |
 | **合盖睡眠与电源键行为** | `modules/power.nix` | §1. 睡眠模式与合盖锁屏 (`services.logind`) |
 | **USB 供电与外设防休眠** | `modules/power.nix` | §3. 2.4G 鼠标接收器靶向保活与自动节能 |
 | **鼠标指针主题与尺寸** | `modules/appearance.nix` | §1~§3 (`cursorTheme = "Adwaita"`, `cursorSize = 24`) |
