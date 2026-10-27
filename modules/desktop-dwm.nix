@@ -114,9 +114,6 @@ in
         use-damage = true;
         # 全屏应用/视频播放时自动解除重定向（直通渲染），杜绝输入延迟
         unredir-if-possible = true;
-        # 优化 GLX 性能与显存交换
-        glx-no-stencil = true;
-        glx-no-rebind-pixmap = true;
       };
     };
 
