@@ -45,9 +45,6 @@ in
     };
 
     # ── 2. TTY 自动登录与 startx ────────────────
-    services.displayManager.sddm.enable = false;
-    services.desktopManager.plasma6.enable = false;
-
     # tty1 免密码自动登录
     services.getty.autologinUser = "flynn";
 

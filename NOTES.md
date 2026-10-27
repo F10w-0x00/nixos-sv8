@@ -563,6 +563,26 @@ Zathura 采用极简设计，基于轻量快速的 MuPDF 渲染后端，配合�
   - Docker 镜像：`docker pull <镜像名>`；
   - 松下机身硬件固件/微码：`fwupdmgr refresh && fwupdmgr update`。
 
+### 15. v1.0 正式里程碑达成与全局冗余精简审查
+
+- **版本发布标记**：`v1.0` (Production Ready)
+- **核心里程碑集成**：
+  1. **虚拟化矩阵完备**：原生 KVM + QEMU + Libvirt + Virt-Manager + VirtIO-Win 驱动封装，Windows 10 LTSC 虚拟机丝滑运行，专选手册固化于 `docs/VIRTUALIZATION.md`；
+  2. **容器生态集成**：Docker 守护进程 + autoPrune 每周自动垃圾回收 + Docker Compose 多容器编排，零基础手册固化于 `docs/DOCKER.md`；
+  3. **视觉撕裂彻底消除**：低延迟纯 VSync Picom 启用（OpenGL GLX 后端，60Hz 垂直同步，增量渲染与全屏直通，已剔除过时的 `glx-no-stencil` / `glx-no-rebind-pixmap`）；
+  4. **开关机极速优化**：彻底钝化软硬件 Watchdog（`nowatchdog` 与 `iTCO_wdt` 黑名单），降低 CPU 周期唤醒中断，加速关机断电；
+  5. **默认浏览器生态**：预装 Google Chrome 并统一关联 XDG MIME 与全局 BROWSER 环境变量，与 Firefox 双轨并行；
+  6. **升级运维标准化**：确立 Nix Flake 原子更新与一键秒级回滚标准工作流。
+- **全局死代码与冗余精简审查（用户 Review 批准落地）**：
+  - 移除 `desktop-dwm.nix` 中冗余的 `sddm` 与 `plasma6` 显式禁用语句；
+  - 移除 `services.nix` 中冗余的 `printing` 与 `flatpak` 显式禁用语句；
+  - 移除 `sv8.nix` 中与 `hardware-configuration.nix` 完全重复的 CPU 微码配置语句；
+  - 移除 `services.nix` 中已过时的 Firefox 环境变量 `MOZ_USE_XINPUT2`；
+  - 移除 `fonts-ime.nix` 中已被 Noto CJK 完整取代的远古中文字体（文泉驿正黑/微米黑）；
+  - 移除 `pkgs/dwm/config.h` 中未安装应用（GIMP）的平铺浮动规则；
+  - 经用户确认保留 `services.nix` 中注释备查的 Clash Verge 代码块。
+
+
 
 
 

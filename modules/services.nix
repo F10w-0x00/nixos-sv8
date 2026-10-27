@@ -25,9 +25,6 @@
   services.fwupd.enable = true; # 用于只读检查固件更新 (fwupdmgr get-updates)
 
   # ── 4. 存储、桌面 Portal 与应用集成 ──────────
-  services.printing.enable = false;
-  services.flatpak.enable = false;
-
   xdg.portal = {
     enable = true;
     extraPortals = [ pkgs.xdg-desktop-portal-gtk ];
@@ -50,7 +47,6 @@
   environment.sessionVariables = {
     BROWSER = "google-chrome-stable";
     TERMINAL = "alacritty";
-    MOZ_USE_XINPUT2 = "1"; # 启用 XInput2 高精度事件流，彻底消除浏览器中鼠标划过超链接时的事件阻塞与阻滞感
   };
 
   # 局域网跨设备互传工具
@@ -61,23 +57,23 @@
 
   # ── 5. 网络代理 (Clash Verge Rev，常驻系统代理服务) ────────
   # 以 root systemd 服务模式安全托管 TUN 模式与透明代理
-   programs.clash-verge = {
-    enable = true;
-    package = pkgs.symlinkJoin {
-      name = "clash-verge-rev";
-      paths = [ pkgs.clash-verge-rev ];
-      nativeBuildInputs = [ pkgs.makeWrapper ];
-      postBuild = ''
-        wrapProgram $out/bin/clash-verge \
-          --set WEBKIT_DISABLE_DMABUF_RENDERER 1
-      '';
-    };
-    tunMode = false; # 禁用 GUI setcap 包装，避免触发 AT_SECURE 导致 WebKitGTK 沙盒白屏
-    serviceMode = true; # 由 root systemd 服务安全托管 TUN 模式
-   };
+  # programs.clash-verge = {
+  #  enable = true;
+  #  package = pkgs.symlinkJoin {
+  #    name = "clash-verge-rev";
+  #    paths = [ pkgs.clash-verge-rev ];
+  #    nativeBuildInputs = [ pkgs.makeWrapper ];
+  #    postBuild = ''
+  #      wrapProgram $out/bin/clash-verge \
+  #        --set WEBKIT_DISABLE_DMABUF_RENDERER 1
+  #    '';
+  #  };
+  #  tunMode = false; # 禁用 GUI setcap 包装，避免触发 AT_SECURE 导致 WebKitGTK 沙盒白屏
+  #  serviceMode = true; # 由 root systemd 服务安全托管 TUN 模式
+  # };
 
   # 允许普通用户态 GUI 访问后台守护进程的套接字通信
-   systemd.services.clash-verge.serviceConfig.PrivateTmp = lib.mkForce false;
+  # systemd.services.clash-verge.serviceConfig.PrivateTmp = lib.mkForce false;
 
   # ── 6. 日常桌面套件 ──────────────────────────
   environment.systemPackages = with pkgs; [

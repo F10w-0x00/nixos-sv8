@@ -1,18 +1,12 @@
 # hosts/sv8/sv8.nix — Panasonic Let's Note CF-SV8 本机特有硬件配置
 # 本文件是唯一的本机特有配置；换一台电脑本文件中所有设置均失效、有害或无意义
 {
-  config,
-  lib,
   pkgs,
   ...
 }:
 
 {
-  # ── 1. 固件与 CPU 微码 ─────────────────────────
-  # [SV8] Intel Whiskey Lake (i7-8665U) CPU 微码补丁；换 AMD 或其他架构机器失效或报错
-  hardware.cpu.intel.updateMicrocode = lib.mkDefault config.hardware.enableRedistributableFirmware;
-
-  # ── 2. 松下专有平台驱动与按键 ─────────────────
+  # ── 1. 松下专有平台驱动与按键 ─────────────────
   # [SV8] 松下独占 WMI/ACPI 平台驱动，绑定机身特有热键（Fn 亮度/音量）、硬件接口；换其他品牌机器加载无意义
   boot.kernelModules = [ "panasonic_laptop" ];
 

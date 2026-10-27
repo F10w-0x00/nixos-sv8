@@ -125,3 +125,15 @@
 - [x] 执行顺序：A（拆分）→ 用户 rebuild 验证 → B（光标）→ 用户 rebuild 验证 → C（光驱工具与文档）已就绪
 - [x] 最终状态归档：阶段 10 全部任务（A 拆出 sv8.nix、B 低延迟光标、C DVD+R 刻录与工具链闭环）全量实测通过并归档至 Git 历史与知识库
 
+## 阶段 11 — 虚拟化 / Docker / VSync 撕裂消除 / 全局精简 (v1.0 里程碑)
+
+- [x] KVM + Libvirt + Virt-Manager 硬件级虚拟化与 Windows 10 LTSC 虚拟机安装链路（`modules/virtualisation.nix`、`docs/VIRTUALIZATION.md`）
+- [x] Docker 容器引擎与 Docker-compose 多容器编排集成（`modules/virtualisation.nix`、`docs/DOCKER.md`）
+- [x] 极简低延迟 VSync Picom 启用，彻底消除快速滚动撕裂，并剔除过时废弃参数
+- [x] 彻底钝化软硬件 Watchdog，消除周期中断唤醒，加速开关机（`hosts/sv8/sv8.nix`）
+- [x] 引入 Google Chrome 浏览器并固化为系统默认浏览器（`modules/base.nix`、`modules/services.nix`）
+- [x] 全局审查与冗余精简（按 Review 结论清理冗余关闭项、重复微码、过时字体与样例浮动规则）
+- [x] 系统全量更新与秒级回滚标准工作流文档化（`README.md`、`NOTES.md`）
+- [x] 正式发布 v1.0 里程碑并打标 Git Tag `v1.0`
+
+

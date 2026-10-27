@@ -9,8 +9,6 @@
       noto-fonts-cjk-sans # Google Noto 黑体 (中日韩，简体优先)
       noto-fonts-cjk-serif # Google Noto 宋体
       noto-fonts-color-emoji # 彩色 Emoji 表情
-      wqy_zenhei # 文泉驿正黑
-      wqy_microhei # 文泉驿微米黑
     ];
 
     fontconfig = {
