@@ -12,5 +12,6 @@
     ./fonts-ime.nix
     ./services.nix
     ./appearance.nix
+    ./virtualisation.nix
   ];
 }

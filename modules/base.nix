@@ -110,12 +110,13 @@ in
     tree
     btop
     fastfetch
-    gcc
+    gcc  #C
     gdb
     gnumake
     cmake
-    cargo
+    cargo  #Rust
     rustc
+    python3  #Python
     alacritty
     neovim
     vscode
