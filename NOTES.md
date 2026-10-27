@@ -537,6 +537,33 @@ Zathura 采用极简设计，基于轻量快速的 MuPDF 渲染后端，配合�
   - 内核参数加入 `nowatchdog`，关闭内核 NMI 锁检测；
   - 黑名单屏蔽 `iTCO_wdt`、`mei_wdt`、`intel_oc_wdt`，消除 CPU 周期中断唤醒，加速关机断电流程。
 
+### 14. 全系统软件全量更新与版本演进标准操作流
+
+- **更新机制机理**：
+  - 本机采用纯 Flake 架构，所有系统组件（Linux 内核、浏览器、QEMU、Docker、桌面环境与基础工具）的版本与哈希均由 `flake.lock` 锁定，杜绝依赖冲突与隐式版本飘移。
+- **全量升级标准两步流**：
+  1. **更新软件源快照**：
+     ```bash
+     cd ~/nixos-config && nix flake update
+     ```
+     连接官方源拉取 `nixos-unstable` 最新提交并更新 `flake.lock`，不影响正在运行的系统。
+  2. **原子构建与切换系统**：
+     ```bash
+     sudo nixos-rebuild switch --flake ~/nixos-config#sv8
+     ```
+     从 Hydra / cache.nixos.org 下载全量最新预编译包，生成全新系统代数（Generation）并原子切换。
+- **一键合并命令**：
+  ```bash
+  cd ~/nixos-config && nix flake update && sudo nixos-rebuild switch --flake .#sv8
+  ```
+- **原子性保障与一键回滚**：
+  - 升级过程全程在独立沙盒构建，无断电/断网导致“半安装损坏”风险；
+  - 若遇新版软件 Bug 或兼容性问题，随时执行 `sudo nixos-rebuild switch --rollback` 或在开机引导菜单回车，1 秒无损回滚到上一代。
+- **外围组件补充更新**：
+  - Docker 镜像：`docker pull <镜像名>`；
+  - 松下机身硬件固件/微码：`fwupdmgr refresh && fwupdmgr update`。
+
+
 
 
 

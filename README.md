@@ -237,6 +237,18 @@ sudo nix-store --optimise
 
 ---
 
+## 常用系统运维指令
+
+| 运维场景 | 执行指令 |
+| :--- | :--- |
+| **应用当前配置变更** | `sudo nixos-rebuild switch --flake ~/nixos-config#sv8` |
+| **一键全量更新全部软件至最新版** | `cd ~/nixos-config && nix flake update && sudo nixos-rebuild switch --flake .#sv8` |
+| **一键秒级回滚至上一代系统** | `sudo nixos-rebuild switch --rollback` |
+| **查看系统历史代数 (Generations)** | `nixos-rebuild list-generations` |
+| **清理 7 天以上旧包与垃圾回收** | `sudo nix-collect-garbage --delete-older-than 7d && nix-store --optimise` |
+
+---
+
 ## 已知事项与硬件特性 (CF-SV8)
 1. **CPU**：Intel Core i7-8665U (Whiskey Lake, 4C/8T)，固化原厂 10W 冷凉静音与超长续航。
 2. **内存**：16GB LPDDR3 (板载)，已配置 ZRAM 50% 动态压缩交换空间防 OOM。
