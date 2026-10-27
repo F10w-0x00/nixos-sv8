@@ -120,6 +120,7 @@ in
     alacritty
     neovim
     vscode
+    google-chrome
   ];
 
   # ── 7. PKI 证书安全与吊销黑名单 ────────────────
