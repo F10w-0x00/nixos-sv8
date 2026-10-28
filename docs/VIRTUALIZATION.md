@@ -41,7 +41,7 @@
 
 ## 二、 虚拟化环境就绪验证
 
-系统已在 [`modules/virtualisation.nix`](file:///home/flynn/nixos-config/modules/virtualisation.nix) 中固化了完整支持：
+系统已在 [modules/virtualisation.nix](../modules/virtualisation.nix) 中固化了完整支持：
 
 1. **确认 VirtIO 驱动光盘软链接**：
    ```bash
@@ -94,7 +94,10 @@
      `/run/current-system/sw/share/virtio-win/virtio-win.iso`
 6. **显示与显卡协议**：
    - **Display Spice**：保持默认 Spice 协议。
-   - **Video**：选择 **`QXL`** 或 **`Virtio`**。
+   - **Video**：推荐选择 **`QXL`**（若选择 `Virtio`，切勿勾选 3D 加速）。
+7. **检查引导顺序 (Boot Options)**：
+   - 点击左侧 **Boot Options（引导选项）**。
+   - 勾选挂载了安装镜像的 **SATA CDROM 1**，并将其上移至第一启动顺位（防止修改磁盘总线和 UEFI 后直接掉入 UEFI Shell）。
 
 确认全部修改后，点击左上角 **“开始安装”**。
 
@@ -108,7 +111,7 @@
    - 界面提示 *“找不到任何驱动器”*（因为磁盘是 VirtIO 接口，微软镜像原生未内置该驱动）。
    - 点击列表下方的 **「加载驱动程序」（Load driver）** -> 点击 **「浏览」**。
    - 在弹出的盘符列表中，展开第二个驱动器（`virtio-win` 光盘）。
-   - 展开路径：`vioscsi` -> `w10` -> `amd64`（或 `viostor` -> `w10` -> `amd64`），点击“确定”。
+   - 展开路径：`viostor` -> `w10` -> `amd64`（对应步骤 2 中的 `VirtIO` 磁盘总线；若磁盘总线选的是 `SCSI` 则选 `vioscsi`），点击“确定”。
    - 选中识别出的 **`Red Hat VirtIO SCSI controller`**，点击“下一步”。
 5. 此时刚才分配的虚拟硬盘立即出现，点击“下一步”正常进行系统复制与安装。
 
@@ -137,11 +140,11 @@ Virt-Manager 运行中，点击菜单栏 **虚拟机 -> 重定向 USB 设备**�
 在对虚拟机进行重大软件测试前，点击 Virt-Manager 工具栏的 **快照管理图标**（带摄像头的按钮），点击左下角 **+ 号** 创建快照。测试失败随时可一秒回滚到初始干净状态。
 
 ### 3. 命令行 virsh 快速操控
-无需打开 GUI 也可通过终端快速控制：
+无需打开 GUI 也可通过终端快速控制（若未配置 `LIBVIRT_DEFAULT_URI="qemu:///system"` 环境变量，需加上 `-c qemu:///system` 参数）：
 ```bash
-virsh list --all               # 查看所有虚拟机状态
-virsh start win10              # 启动名为 win10 的虚拟机
-virsh shutdown win10           # 优雅关机
-virsh destroy win10            # 强制断电
-virsh snapshot-list win10      # 查看快照列表
+virsh -c qemu:///system list --all               # 查看所有虚拟机状态
+virsh -c qemu:///system start win10              # 启动名为 win10 的虚拟机
+virsh -c qemu:///system shutdown win10           # 优雅关机
+virsh -c qemu:///system destroy win10            # 强制断电
+virsh -c qemu:///system snapshot-list win10      # 查看快照列表
 ```
