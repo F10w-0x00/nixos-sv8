@@ -85,4 +85,12 @@
     anki # 记忆卡片学习软件
     qbittorrent-enhanced # 增强版 BT 下载客户端
   ];
+
+  # ── 7. 游戏平台 (Steam 原生运行环境) ──────────────────
+  programs.steam = {
+    enable = true;
+    remotePlay.openFirewall = false;
+    dedicatedServer.openFirewall = false;
+    localNetworkGameTransfers.openFirewall = false;
+  };
 }

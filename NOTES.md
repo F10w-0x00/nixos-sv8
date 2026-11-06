@@ -583,6 +583,44 @@ Zathura 采用极简设计，基于轻量快速的 MuPDF 渲染后端，配合�
   - 经用户确认保留 `services.nix` 中注释备查的 Clash Verge 代码块；
   - 顶栏状态栏 (slstatus) 优化：[WIFI] 成功连接时不再显示勾号，改为通过 NetworkManager 直接提取并显示当前连接的 Wi-Fi 具体名称 (SSID)，未连接时显示 ✗。
 
+### 16. 桌面交互体验深度重构、游戏模拟与全景生态落地 (2026-11-06 ~ 2026-11-07)
+
+- **Flake 全量升级与构建兼容性修复**：
+  - 执行 `nix flake update` 更新至 `nixpkgs` 最新提交快照（`1d060086d60c...`）；
+  - 修复 `dwm-6.8` 源码在重构后的编译错误：在 `pkgs/dwm/config.h` 中补齐声明 `static const int refreshrate = 120;`；
+  - 适配 `nss-cacert-3.131.1` 证书更新（Mozilla NSS 已在上游移除 C1/C3/G3 证书）：在 `modules/base.nix` 中精简 `security.pki.caCertificateBlacklist`，仅保留仍在黑名单中的 `"emSign Root CA - G1"`。
+- **顶栏状态栏 (slstatus) 极简重构与音量设备联动**：
+  - 移除极易引起视觉分心的 CPU 与 RAM 百分比占用监控；
+  - 增设全新音量状态模块 `[VOL %s]`：
+    - 在 `modules/desktop-dwm.nix` 中编写轻量级检测探针 `get-volume-status`，基于 WirePlumber (`wpctl get-volume` 与 `wpctl get-route`) 实现状态嗅探；
+    - 在 `pkgs/slstatus/config.h.in` 中统一接入：外放扬声器输出显示 `󰕾 [vol]%`，插上耳机自动切换为 `󰋋 [vol]%`，静音时呈现 `󰖁 MUT` 或 `󰋋 MUT`；
+    - 恢复标准日期时间格式为 `YYYY-MM-DD HH:MM`（`%Y-%m-%d %H:%M`）。
+- **松下圆盘触摸板滚动阻尼与 Zathura 精细步进优化**：
+  - 针对松下经典圆盘顺时针/逆时针边缘旋转滚动“过于顺滑”的问题：
+    - 在 `hosts/sv8/sv8.nix` 中调增旋转滚动步长阈值 `CircScrollDelta = "0.4"`，并彻底关闭旋转松开后的动能惯性滑行 `CoastingSpeed = "0"`；
+    - 在 `dotfiles/zathura/zathurarc` 中将平滑滚动步进 `scroll-step` 精确下调为 `10`（经由 50 -> 25 -> 10 逐级调试实测），实现极度细腻可控的 PDF 阅读步进。
+- **Google Chrome 交互异常排查、渲染机理与 DPI 科普**：
+  - 根治保存文件 (<kbd>Ctrl</kbd>+<kbd>S</kbd>) 弹窗变形与沙盒白屏：在 `modules/appearance.nix` 固化 GTK3/GTK4 暗色主题设置以及 dconf 对文件选择对话框窗口尺寸约束（默认 `(900, 600)`），彻底防止弹窗超出屏幕；
+  - 修复 Dmenu 区分大小写导致小写无法唤起 `GUI.for.SingBox` 的问题：在 `pkgs/dwm/config.h` 为 `dmenucmd` 添加 `-i`（忽略大小写），并在 `modules/services.nix` 注入小写别名包装；
+  - Chrome 搜索栏 Google Logo 与 Profile 默认头像呈现像素点锯齿原因深度剖析：
+    - 确认为低分辨率位图（16x16 Favicon 与 32x32 经典 PNG 头像）在松下 SV8 的 144 DPI (1.5x 分数缩放) 下发生最近邻/阶梯拉伸插值；
+    - 拆解了 Mikan 等页面在 1.5x 缩放下（逻辑视口压缩至 1280px）因 CSS 绝对定位向右展开（`left: 100%`）缺乏边界碰撞检测导致二级子菜单切边出界的机理，并提供单站缩放与折叠标签栏应对方案；
+    - 系统科普了 SV8 屏幕物理特性（12.1寸 1920x1200, 187 PPI）、DPI 换算算法，确立 144 DPI (1.5x) 为综合护眼最佳平衡档，120 DPI (1.25x) 为极客多任务视野推荐档。
+- **现代工具链与游戏运行环境引入**：
+  - 在 `modules/base.nix` 引入新一代轻量现代文本编辑器 `zed-editor`；
+  - 在 `modules/services.nix` 启用原生 `programs.steam`，自动关联 32 位图形栈（`hardware.graphics.enable32Bit = true`），并按用户最新指示彻底清除 `dwproton-bin` 冗余依赖。
+- **Switch 模拟器深度评测与独立模块集成 (`modules/emulation.nix`)**：
+  - 调研评估确立：针对 Intel UHD 620 核显运行《月姬 Remake》与《十三机兵防卫圈》，**Yuzu (EA 4176 最终巅峰版)** 凭借 C++ 极速引擎、轻量 Vulkan 后端与异步着色器构建，性能与发热表现显著优于 Ryubing（锁 60 帧，整机 CPU 仅 15%~25% 不撞墙）；
+  - 新建独立模块 `modules/emulation.nix` 并注册至 `modules/default.nix`：
+    - 引入通用 `appimage-run`；
+    - 采用 `pkgs.appimageTools.wrapType2` 声明式封装 `yuzu-ea`，自动通过 HuggingFace 镜像拉取校验 `Linux-Yuzu-EA-4176.AppImage`（SHA256 校验），并补齐 FHS 环境所需的 `libgpg-error` 和 `file` 动态依赖；
+    - 本地同时下载了独立便携版至 `~/Games/yuzu/yuzu.AppImage`，预先建立了 keys 与 firmware 数据目录；
+  - 系统梳理了《月姬 Remake》官方中文版依赖 Switch 官方固件中文字库（`SharedFont`）的技术机理与固件安装指南。
+- **主机独占 Galgame / 视觉小说全盘点与《月姬 Remake》PC 现状权威核实**：
+  - 权威核实：虽于 2024 年 6 月推出官方中英文，但《月姬 -A piece of blue glass moon-》至今**绝无 PC / Steam 版**，仍为 PS4 / Switch 主机完全独占；
+  - 盘点收录全网主流主机独占文字冒险大作：香草社《十三机兵防卫圈》、任天堂第一方《Famicom 侦探俱乐部》系列（含2024新作《笑脸男》）、《搭档任务 秘密搜查组》、MAGES. 漫改《春物》游戏三部曲全系列、《五等分的新娘 3：五色誓言》、《夏日重现 Another Horizon》、《摇曳露营△ Have a nice day!》及 Otomate 乙女向独占阵营。
+
+
 
 
 

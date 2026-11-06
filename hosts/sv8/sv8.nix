@@ -46,7 +46,8 @@
       Option "CircularPad" "on"
       Option "CircularScrolling" "on"
       Option "CircScrollTrigger" "0"
-      Option "CircScrollDelta" "0.2"
+      Option "CircScrollDelta" "0.4"
+      Option "CoastingSpeed" "0"
     '';
   };
 

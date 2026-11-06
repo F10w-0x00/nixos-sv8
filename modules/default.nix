@@ -13,5 +13,6 @@
     ./services.nix
     ./appearance.nix
     ./virtualisation.nix
+    ./emulation.nix
   ];
 }

@@ -14,6 +14,43 @@ let
   # 桌面壁纸（自包含于仓库 wallpapers/ 目录下，随构建打包进系统）
   wallpaperPath = ../wallpapers/wallpaper.png;
 
+  # 音量与输出路由状态检测（支持毫秒级检测 PipeWire 外放/耳机与静音状态）
+  getVolumeScript = pkgs.writeShellScriptBin "get-volume-status" ''
+    vol_line=$(${pkgs.wireplumber}/bin/wpctl get-volume @DEFAULT_AUDIO_SINK@ 2>/dev/null || true)
+    if [ -z "$vol_line" ]; then
+      echo "n/a"
+      exit 0
+    fi
+
+    raw_vol=$(echo "$vol_line" | ${pkgs.gawk}/bin/awk '{print $2}')
+    is_muted=0
+    if echo "$vol_line" | ${pkgs.gnugrep}/bin/grep -q "MUTED"; then
+      is_muted=1
+    fi
+
+    vol_pct=$(${pkgs.gawk}/bin/awk -v v="$raw_vol" 'BEGIN { printf "%d", int(v * 100 + 0.5) }')
+
+    route_out=$(${pkgs.wireplumber}/bin/wpctl get-route @DEFAULT_AUDIO_SINK@ 2>/dev/null || true)
+    is_headphone=0
+    if echo "$route_out" | ${pkgs.gnugrep}/bin/grep -qE '^\s*\*\s+[0-9]+.*(Headphone|Headset)'; then
+      is_headphone=1
+    fi
+
+    if [ "$is_headphone" -eq 1 ]; then
+      if [ "$is_muted" -eq 1 ]; then
+        echo "󰋋 MUT"
+      else
+        echo "󰋋 $vol_pct%"
+      fi
+    else
+      if [ "$is_muted" -eq 1 ]; then
+        echo "󰖁 MUT"
+      else
+        echo "󰕾 $vol_pct%"
+      fi
+    fi
+  '';
+
   # Suckless 工具链定制编译注入
   customDwm = pkgs.dwm.override {
     conf = ../pkgs/dwm/config.h;
@@ -24,6 +61,7 @@ let
   customSlstatus = pkgs.slstatus.override {
     conf = pkgs.replaceVars ../pkgs/slstatus/config.h.in {
       batteryName = config.my.batteryName;
+      getVolumeCmd = "${getVolumeScript}/bin/get-volume-status";
     };
   };
 in
@@ -117,6 +155,7 @@ in
     programs.slock.enable = true; # 开启 setuid 权限支持校验用户密码
 
     environment.systemPackages = with pkgs; [
+      getVolumeScript # 音量与输出设备状态检测脚本
       customDmenu # dmenu 应用启动器
       customSlstatus # slstatus 状态栏
       brightnessctl # 屏幕背光调节工具
