@@ -134,12 +134,12 @@ let
         if [ "''$status" = "running" ]; then
           if [ "''$mode" = "stopwatch" ]; then
             elapsed=$((now - start_ts + paused_accum))
-            printf "[+ %s] " "$(format_time "''$elapsed")"
+            printf "[󰐕 %s] " "$(format_time "''$elapsed")"
           elif [ "''$mode" = "countdown" ]; then
             elapsed=$((now - start_ts))
             remaining=$((target_secs - elapsed))
             if [ "''$remaining" -gt 0 ]; then
-              printf "[- %s] " "$(format_time "''$remaining")"
+              printf "[󰍴 %s] " "$(format_time "''$remaining")"
             else
               if [ "''$notified" -eq 0 ]; then
                 sed -i 's/^notified=0/notified=1/' "''$STATE_FILE" 2>/dev/null || true
