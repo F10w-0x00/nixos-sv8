@@ -139,13 +139,13 @@ let
             elapsed=$((now - start_ts))
             remaining=$((target_secs - elapsed))
             if [ "''$remaining" -gt 0 ]; then
-              printf "[󰄬 %s] " "$(format_time "''$remaining")"
+              printf "[- %s] " "$(format_time "''$remaining")"
             else
               if [ "''$notified" -eq 0 ]; then
                 sed -i 's/^notified=0/notified=1/' "''$STATE_FILE" 2>/dev/null || true
                 ${pkgs.libnotify}/bin/notify-send -u critical -a "Timer" "⏰ 时间到！" "您设定的倒计时已完成！" 2>/dev/null || true
               fi
-              printf "[󰂞 00:00:00] "
+              printf "[󰄬 00:00:00] "
             fi
           else
             printf "[00:00:00] "
