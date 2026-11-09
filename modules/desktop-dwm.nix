@@ -122,24 +122,24 @@ let
     case "''$cmd" in
       status)
         if [ ! -f "''$STATE_FILE" ]; then
-          printf "[󱎫 00:00:00] "
+          printf "[00:00:00] "
           exit 0
         fi
 
         mode="" status="" start_ts=0 paused_accum=0 target_secs=0 notified=0
-        . "''$STATE_FILE" 2>/dev/null || { printf "[󱎫 00:00:00] "; exit 0; }
+        . "''$STATE_FILE" 2>/dev/null || { printf "[00:00:00] "; exit 0; }
 
         now=''${EPOCHSECONDS}
 
         if [ "''$status" = "running" ]; then
           if [ "''$mode" = "stopwatch" ]; then
             elapsed=$((now - start_ts + paused_accum))
-            printf "[󱎫 %s] " "$(format_time "''$elapsed")"
+            printf "[+ %s] " "$(format_time "''$elapsed")"
           elif [ "''$mode" = "countdown" ]; then
             elapsed=$((now - start_ts))
             remaining=$((target_secs - elapsed))
             if [ "''$remaining" -gt 0 ]; then
-              printf "[󱎫 %s] " "$(format_time "''$remaining")"
+              printf "[󰄬 %s] " "$(format_time "''$remaining")"
             else
               if [ "''$notified" -eq 0 ]; then
                 sed -i 's/^notified=0/notified=1/' "''$STATE_FILE" 2>/dev/null || true
@@ -148,7 +148,7 @@ let
               printf "[󰂞 00:00:00] "
             fi
           else
-            printf "[󱎫 00:00:00] "
+            printf "[00:00:00] "
           fi
         elif [ "''$status" = "paused" ]; then
           if [ "''$mode" = "stopwatch" ]; then
@@ -159,7 +159,7 @@ let
             printf "[󰏤 00:00:00] "
           fi
         else
-          printf "[󱎫 00:00:00] "
+          printf "[00:00:00] "
         fi
         ;;
 
