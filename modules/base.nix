@@ -120,7 +120,6 @@ in
     alacritty
     neovim
     vscode
-    zed-editor
     google-chrome
   ];
 

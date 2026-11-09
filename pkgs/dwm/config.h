@@ -31,6 +31,10 @@ static const Rule rules[] = {
 	{ "xdg-desktop-portal-gtk",   NULL,       NULL,       0,            1,           -1 },
 	{ "Xdg-desktop-portal-gtk",   NULL,       NULL,       0,            1,           -1 },
 	{ "mpv",                      NULL,       NULL,       0,            1,           -1 },
+	{ "com.gabm.satty",           NULL,       NULL,       0,            1,           -1 },
+	{ "org.satty.satty",          NULL,       NULL,       0,            1,           -1 },
+	{ "satty",                    NULL,       NULL,       0,            1,           -1 },
+	{ "Satty",                    NULL,       NULL,       0,            1,           -1 },
 };
 
 /* layout(s) */
@@ -69,7 +73,8 @@ static const char *volmutecmd[]  = { "wpctl", "set-mute", "@DEFAULT_AUDIO_SINK@"
 static const char *micmutecmd[]  = { "wpctl", "set-mute", "@DEFAULT_AUDIO_SOURCE@", "toggle", NULL };
 static const char *brupcmd[]     = { "brightnessctl", "set", "+5%", NULL };
 static const char *brdowncmd[]   = { "brightnessctl", "set", "5%-", NULL };
-static const char *screenshotcmd[] = { "sh", "-c", "maim -s | xclip -selection clipboard -t image/png", NULL };
+static const char *screenshotcmd[]     = { "dwm-screenshot", NULL };
+static const char *screenshotfullcmd[] = { "dwm-screenshot", "--full", NULL };
 
 static const Key keys[] = {
 	/* modifier                     key                       function        argument */
@@ -83,6 +88,7 @@ static const Key keys[] = {
 	{ 0,                            XF86XK_MonBrightnessUp,   spawn,          {.v = brupcmd } },
 	{ 0,                            XF86XK_MonBrightnessDown, spawn,          {.v = brdowncmd } },
 	{ 0,                            XK_Print,                 spawn,          {.v = screenshotcmd } },
+	{ ShiftMask,                    XK_Print,                 spawn,          {.v = screenshotfullcmd } },
 	{ MODKEY,                       XK_b,                     togglebar,      {0} },
 	{ MODKEY,                       XK_j,                     focusstack,     {.i = +1 } },
 	{ MODKEY,                       XK_k,                     focusstack,     {.i = -1 } },

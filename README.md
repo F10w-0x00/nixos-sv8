@@ -41,7 +41,7 @@
 │   ├── VIRTUALIZATION.md              # KVM / QEMU / Virt-Manager 与 Windows 虚拟机完整指南
 │   └── DOCKER.md                      # Docker 容器引擎操作手册与 Cheat Sheet
 ├── wallpapers/                        # 桌面壁纸资源目录（仓库自包含，随构建打包进系统）
-├── dotfiles/                          # 用户级应用核心配置 (fastfetch, alacritty, mpv, zathura)
+├── dotfiles/                          # 用户级应用核心配置 (fastfetch, alacritty, mpv)
 ├── hosts/
 │   ├── sv8/
 │   │   ├── default.nix                # SV8 主机入口（只做 imports、hostName、stateVersion）

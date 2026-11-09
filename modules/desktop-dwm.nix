@@ -51,6 +51,32 @@ let
     fi
   '';
 
+  # 截图与标注交互流脚本（maim 区域截取 + Satty 极速标注 + xclip 剪贴板 + 自动归档）
+  screenshotScript = pkgs.writeShellScriptBin "dwm-screenshot" ''
+    set -euo pipefail
+
+    TARGET_DIR="$HOME/Pictures/Screenshots"
+    mkdir -p "$TARGET_DIR"
+
+    TMP_SHOT=$(mktemp /tmp/satty-XXXXXX.png)
+    trap 'rm -f "$TMP_SHOT"' EXIT
+
+    if [ "''${1:-}" = "--full" ]; then
+      MAIM_ARGS=(-u)
+    else
+      MAIM_ARGS=(-u -s)
+    fi
+
+    if ${pkgs.maim}/bin/maim "''${MAIM_ARGS[@]}" "$TMP_SHOT" 2>/dev/null && [ -s "$TMP_SHOT" ]; then
+      ${pkgs.satty}/bin/satty \
+        --filename "$TMP_SHOT" \
+        --output-filename "$TARGET_DIR/Screenshot_%Y-%m-%d_%H-%M-%S.png" \
+        --copy-command "${pkgs.xclip}/bin/xclip -selection clipboard -t image/png" \
+        --early-exit all \
+        --save-after-copy
+    fi
+  '';
+
   # Suckless 工具链定制编译注入
   customDwm = pkgs.dwm.override {
     conf = ../pkgs/dwm/config.h;
@@ -156,10 +182,12 @@ in
 
     environment.systemPackages = with pkgs; [
       getVolumeScript # 音量与输出设备状态检测脚本
+      screenshotScript # 截图标注交互包装脚本 (dwm-screenshot)
       customDmenu # dmenu 应用启动器
       customSlstatus # slstatus 状态栏
       brightnessctl # 屏幕背光调节工具
       maim # 屏幕截图工具
+      satty # 现代轻量截图标注工具
       xclip # 剪贴板管理工具
       feh # 壁纸加载与看图工具
       dunst # 桌面通知服务

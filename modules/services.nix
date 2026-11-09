@@ -35,13 +35,14 @@
 
   programs.firefox.enable = true;
 
-  # 统一默认浏览器关联至 Google Chrome
+  # 统一默认浏览器关联至 Google Chrome，PDF 阅读同样交由 Chrome 接管
   xdg.mime.defaultApplications = {
     "text/html" = "google-chrome.desktop";
     "x-scheme-handler/http" = "google-chrome.desktop";
     "x-scheme-handler/https" = "google-chrome.desktop";
     "x-scheme-handler/about" = "google-chrome.desktop";
     "x-scheme-handler/unknown" = "google-chrome.desktop";
+    "application/pdf" = "google-chrome.desktop";
   };
 
   environment.sessionVariables = {
@@ -57,28 +58,27 @@
 
   # ── 5. 网络代理 (Clash Verge Rev，常驻系统代理服务) ────────
   # 以 root systemd 服务模式安全托管 TUN 模式与透明代理
-  # programs.clash-verge = {
-  #  enable = true;
-  #  package = pkgs.symlinkJoin {
-  #    name = "clash-verge-rev";
-  #    paths = [ pkgs.clash-verge-rev ];
-  #    nativeBuildInputs = [ pkgs.makeWrapper ];
-  #    postBuild = ''
-  #      wrapProgram $out/bin/clash-verge \
-  #        --set WEBKIT_DISABLE_DMABUF_RENDERER 1
-  #    '';
-  #  };
-  #  tunMode = false; # 禁用 GUI setcap 包装，避免触发 AT_SECURE 导致 WebKitGTK 沙盒白屏
-  #  serviceMode = true; # 由 root systemd 服务安全托管 TUN 模式
-  # };
+   programs.clash-verge = {
+    enable = true;
+    package = pkgs.symlinkJoin {
+      name = "clash-verge-rev";
+      paths = [ pkgs.clash-verge-rev ];
+      nativeBuildInputs = [ pkgs.makeWrapper ];
+      postBuild = ''
+        wrapProgram $out/bin/clash-verge \
+          --set WEBKIT_DISABLE_DMABUF_RENDERER 1
+      '';
+    };
+    tunMode = false; # 禁用 GUI setcap 包装，避免触发 AT_SECURE 导致 WebKitGTK 沙盒白屏
+    serviceMode = true; # 由 root systemd 服务安全托管 TUN 模式
+   };
 
   # 允许普通用户态 GUI 访问后台守护进程的套接字通信
-  # systemd.services.clash-verge.serviceConfig.PrivateTmp = lib.mkForce false;
+   systemd.services.clash-verge.serviceConfig.PrivateTmp = lib.mkForce false;
 
   # ── 6. 日常桌面套件 ──────────────────────────
   environment.systemPackages = with pkgs; [
     pcmanfm # 轻量图形文件管理器
-    zathura # 极简 Vim 键位平铺 PDF 阅读器
     newsflash # RSS 阅读器
     mpv # 轻量多媒体播放器
     ayugram-desktop # Telegram 增强型桌面客户端
