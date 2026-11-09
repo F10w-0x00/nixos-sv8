@@ -77,6 +77,224 @@ let
     fi
   '';
 
+  # Speedrun 极简竞速跑表与倒计时提醒脚本
+  speedrunTimerScript = pkgs.writeShellScriptBin "speedrun-timer" ''
+    set -euo pipefail
+
+    STATE_DIR="''${XDG_RUNTIME_DIR:-/tmp}/speedrun-timer"
+    STATE_FILE="''$STATE_DIR/state"
+
+    mkdir -p "''$STATE_DIR"
+
+    format_time() {
+      local total="''$1"
+      local h=$((total / 3600))
+      local m=$(((total % 3600) / 60))
+      local s=$((total % 60))
+      printf "%02d:%02d:%02d" "''$h" "''$m" "''$s"
+    }
+
+    parse_duration() {
+      local input="''$1"
+      local total=0
+      if [[ "''$input" =~ ^[0-9]+$ ]]; then
+        total=$((input * 60))
+      else
+        local num=""
+        for (( i=0; i<''${#input}; i++ )); do
+          char="''${input:$i:1}"
+          case "''$char" in
+            [0-9]) num="''${num}''${char}" ;;
+            h|H) total=$((total + num * 3600)); num="" ;;
+            m|M) total=$((total + num * 60)); num="" ;;
+            s|S) total=$((total + num)); num="" ;;
+          esac
+        done
+        if [ -n "''$num" ]; then
+          total=$((total + num * 60))
+        fi
+      fi
+      echo "''$total"
+    }
+
+    cmd="''${1:-}"
+
+    case "''$cmd" in
+      status)
+        if [ ! -f "''$STATE_FILE" ]; then
+          printf "[󱎫 00:00:00] "
+          exit 0
+        fi
+
+        mode="" status="" start_ts=0 paused_accum=0 target_secs=0 notified=0
+        . "''$STATE_FILE" 2>/dev/null || { printf "[󱎫 00:00:00] "; exit 0; }
+
+        now=''${EPOCHSECONDS}
+
+        if [ "''$status" = "running" ]; then
+          if [ "''$mode" = "stopwatch" ]; then
+            elapsed=$((now - start_ts + paused_accum))
+            printf "[󱎫 %s] " "$(format_time "''$elapsed")"
+          elif [ "''$mode" = "countdown" ]; then
+            elapsed=$((now - start_ts))
+            remaining=$((target_secs - elapsed))
+            if [ "''$remaining" -gt 0 ]; then
+              printf "[󱎫 %s] " "$(format_time "''$remaining")"
+            else
+              if [ "''$notified" -eq 0 ]; then
+                sed -i 's/^notified=0/notified=1/' "''$STATE_FILE" 2>/dev/null || true
+                ${pkgs.libnotify}/bin/notify-send -u critical -a "Timer" "⏰ 时间到！" "您设定的倒计时已完成！" 2>/dev/null || true
+              fi
+              printf "[󰂞 00:00:00] "
+            fi
+          else
+            printf "[󱎫 00:00:00] "
+          fi
+        elif [ "''$status" = "paused" ]; then
+          if [ "''$mode" = "stopwatch" ]; then
+            printf "[󰏤 %s] " "$(format_time "''$paused_accum")"
+          elif [ "''$mode" = "countdown" ]; then
+            printf "[󰏤 %s] " "$(format_time "''$target_secs")"
+          else
+            printf "[󰏤 00:00:00] "
+          fi
+        else
+          printf "[󱎫 00:00:00] "
+        fi
+        ;;
+
+      run|start)
+        now=''${EPOCHSECONDS}
+        cat <<EOF > "''$STATE_FILE"
+mode=stopwatch
+status=running
+start_ts=''${now}
+paused_accum=0
+target_secs=0
+notified=0
+EOF
+        echo "Speedrun stopwatch started."
+        ;;
+
+      pause)
+        if [ -f "''$STATE_FILE" ]; then
+          mode="" status="" start_ts=0 paused_accum=0 target_secs=0 notified=0
+          . "''$STATE_FILE" 2>/dev/null || exit 0
+          if [ "''$status" = "running" ]; then
+            now=''${EPOCHSECONDS}
+            if [ "''$mode" = "stopwatch" ]; then
+              paused_accum=$((now - start_ts + paused_accum))
+            elif [ "''$mode" = "countdown" ]; then
+              target_secs=$((target_secs - (now - start_ts)))
+              if [ "''$target_secs" -lt 0 ]; then target_secs=0; fi
+            fi
+            cat <<EOF > "''$STATE_FILE"
+mode=''${mode}
+status=paused
+start_ts=''${now}
+paused_accum=''${paused_accum}
+target_secs=''${target_secs}
+notified=''${notified}
+EOF
+            echo "Timer paused."
+          fi
+        fi
+        ;;
+
+      resume)
+        if [ -f "''$STATE_FILE" ]; then
+          mode="" status="" start_ts=0 paused_accum=0 target_secs=0 notified=0
+          . "''$STATE_FILE" 2>/dev/null || exit 0
+          if [ "''$status" = "paused" ]; then
+            now=''${EPOCHSECONDS}
+            cat <<EOF > "''$STATE_FILE"
+mode=''${mode}
+status=running
+start_ts=''${now}
+paused_accum=''${paused_accum}
+target_secs=''${target_secs}
+notified=''${notified}
+EOF
+            echo "Timer resumed."
+          fi
+        fi
+        ;;
+
+      toggle)
+        if [ ! -f "''$STATE_FILE" ]; then
+          exec "''$0" run
+        fi
+        mode="" status="" start_ts=0 paused_accum=0 target_secs=0 notified=0
+        . "''$STATE_FILE" 2>/dev/null || { exec "''$0" run; }
+        if [ "''$status" = "running" ]; then
+          exec "''$0" pause
+        elif [ "''$status" = "paused" ]; then
+          exec "''$0" resume
+        else
+          exec "''$0" run
+        fi
+        ;;
+
+      stop|reset)
+        rm -f "''$STATE_FILE"
+        echo "Timer reset to 00:00:00."
+        ;;
+
+      *)
+        if [ -n "''$cmd" ]; then
+          secs=$(parse_duration "''$cmd")
+          if [ "''$secs" -gt 0 ]; then
+            now=''${EPOCHSECONDS}
+            cat <<EOF > "''$STATE_FILE"
+mode=countdown
+status=running
+start_ts=''${now}
+paused_accum=0
+target_secs=''${secs}
+notified=0
+EOF
+            echo "Countdown timer started for $(format_time "''$secs")."
+          else
+            echo "Usage: timer [run|start|pause|resume|toggle|stop|reset|<duration>]"
+            echo "Examples: timer run, timer 25m, timer 15, timer stop"
+          fi
+        else
+          if [ -f "''$STATE_FILE" ]; then
+            . "''$STATE_FILE" 2>/dev/null || true
+            echo "Timer mode: ''$mode, status: ''$status"
+          else
+            echo "Timer idle (00:00:00)."
+          fi
+        fi
+        ;;
+    esac
+  '';
+
+  # Speedrun 计时器 dmenu 快速交互菜单
+  speedrunTimerMenu = pkgs.writeShellScriptBin "speedrun-timer-menu" ''
+    CHOICE=$(printf "▶ 开启正向竞速跑表 (Speedrun)\n⏱ 倒计时 25 分钟 (番茄钟)\n⏱ 倒计时 15 分钟\n⏱ 倒计时 45 分钟\n⏱ 倒计时 60 分钟\n⏸ 暂停 / 继续计时\n⏹ 停止并重置 (00:00:00)" | ${customDmenu}/bin/dmenu -i -p "Timer: ")
+
+    case "''$CHOICE" in
+      *"正向竞速"*) ${speedrunTimerScript}/bin/speedrun-timer run ;;
+      *"25 分钟"*)  ${speedrunTimerScript}/bin/speedrun-timer 25m ;;
+      *"15 分钟"*)  ${speedrunTimerScript}/bin/speedrun-timer 15m ;;
+      *"45 分钟"*)  ${speedrunTimerScript}/bin/speedrun-timer 45m ;;
+      *"60 分钟"*)  ${speedrunTimerScript}/bin/speedrun-timer 60m ;;
+      *"暂停"*)      ${speedrunTimerScript}/bin/speedrun-timer toggle ;;
+      *"停止"*)      ${speedrunTimerScript}/bin/speedrun-timer stop ;;
+      *)
+        if [ -n "''$CHOICE" ]; then
+          ${speedrunTimerScript}/bin/speedrun-timer "''$CHOICE"
+        fi
+        ;;
+    esac
+  '';
+
+  # 命令行简短别名 timer -> speedrun-timer
+  timerAlias = pkgs.writeShellScriptBin "timer" ''
+    exec ${speedrunTimerScript}/bin/speedrun-timer "$@"
+  '';
+
   # Suckless 工具链定制编译注入
   customDwm = pkgs.dwm.override {
     conf = ../pkgs/dwm/config.h;
@@ -88,6 +306,7 @@ let
     conf = pkgs.replaceVars ../pkgs/slstatus/config.h.in {
       batteryName = config.my.batteryName;
       getVolumeCmd = "${getVolumeScript}/bin/get-volume-status";
+      getTimerCmd = "${speedrunTimerScript}/bin/speedrun-timer status";
     };
   };
 in
@@ -183,6 +402,9 @@ in
     environment.systemPackages = with pkgs; [
       getVolumeScript # 音量与输出设备状态检测脚本
       screenshotScript # 截图标注交互包装脚本 (dwm-screenshot)
+      speedrunTimerScript # Speedrun 竞速跑表与倒计时主脚本 (speedrun-timer)
+      speedrunTimerMenu # Speedrun 计时器 dmenu 快速交互菜单 (speedrun-timer-menu)
+      timerAlias # 计时器便捷简短别名 (timer)
       customDmenu # dmenu 应用启动器
       customSlstatus # slstatus 状态栏
       brightnessctl # 屏幕背光调节工具

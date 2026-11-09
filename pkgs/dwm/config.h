@@ -75,6 +75,8 @@ static const char *brupcmd[]     = { "brightnessctl", "set", "+5%", NULL };
 static const char *brdowncmd[]   = { "brightnessctl", "set", "5%-", NULL };
 static const char *screenshotcmd[]     = { "dwm-screenshot", NULL };
 static const char *screenshotfullcmd[] = { "dwm-screenshot", "--full", NULL };
+static const char *timermenucmd[]      = { "speedrun-timer-menu", NULL };
+static const char *timertogglecmd[]    = { "speedrun-timer", "toggle", NULL };
 
 static const Key keys[] = {
 	/* modifier                     key                       function        argument */
@@ -89,6 +91,8 @@ static const Key keys[] = {
 	{ 0,                            XF86XK_MonBrightnessDown, spawn,          {.v = brdowncmd } },
 	{ 0,                            XK_Print,                 spawn,          {.v = screenshotcmd } },
 	{ ShiftMask,                    XK_Print,                 spawn,          {.v = screenshotfullcmd } },
+	{ MODKEY,                       XK_s,                     spawn,          {.v = timermenucmd } },
+	{ MODKEY|ShiftMask,             XK_s,                     spawn,          {.v = timertogglecmd } },
 	{ MODKEY,                       XK_b,                     togglebar,      {0} },
 	{ MODKEY,                       XK_j,                     focusstack,     {.i = +1 } },
 	{ MODKEY,                       XK_k,                     focusstack,     {.i = -1 } },
