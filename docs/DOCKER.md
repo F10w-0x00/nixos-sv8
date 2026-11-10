@@ -21,17 +21,20 @@ Docker 是一种轻量级的应用容器引擎。与完整虚拟化（如 KVM �
 
 ---
 
-## 二、 环境准备与免 Sudo 权限
+## 二、 环境准备与开启方式
 
-系统已在 [`modules/virtualisation.nix`](file:///home/flynn/nixos-config/modules/virtualisation.nix) 中固化了 Docker 服务与每周自动清理（`autoPrune`）。
+> [!NOTE]
+> 为精简系统资源与消除不必要的后台常驻守护进程，当前系统的 Docker 引擎默认处于未启用状态。
+> 若您未来需要使用 Docker，只需在 [`modules/virtualisation.nix`](file:///home/flynn/nixos-config/modules/virtualisation.nix) 中重新取消注释或添加：
+> ```nix
+> virtualisation.docker.enable = true;
+> users.users.flynn.extraGroups = [ "libvirtd" "docker" ];
+> environment.systemPackages = with pkgs; [ docker-compose ... ];
+> ```
+> 随后执行 `nixos-rebuild switch` 即可立即恢复。
 
-### 1. 检查 Docker 守护进程状态
-```bash
-docker info
-```
-
-### 2. 免提权运行说明
-用户已加入系统的 `docker` 用户组。若刚配置完在当前终端执行提示 `permission denied`，只需在当前终端执行一次：
+系统启用后的免提权运行说明：
+用户已加入系统的 `docker` 用户组。若配置完在终端执行提示 `permission denied`，只需在当前终端执行一次：
 ```bash
 newgrp docker
 ```

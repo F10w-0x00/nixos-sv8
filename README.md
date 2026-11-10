@@ -37,9 +37,11 @@
 ├── CHECKLIST.md                       # 各阶段任务执行活副本（全项已验证）
 ├── NOTES.md                           # 硬件全功能对照表、实测数据、决策记录与原理解析
 ├── docs/                              # 系统与硬件专项指南
+│   ├── APP.md                         # 系统全量应用清单、职责说明与日常操作手册
+│   ├── SKILL.md                       # 桌面核心快捷键、圆盘手势与网络蓝牙连接技能
 │   ├── DVD-BURNING.md                 # DVD+R 光盘刻录、防睡眠与数据校验指南
 │   ├── VIRTUALIZATION.md              # KVM / QEMU / Virt-Manager 与 Windows 虚拟机完整指南
-│   └── DOCKER.md                      # Docker 容器引擎操作手册与 Cheat Sheet
+│   └── DOCKER.md                      # Docker 容器引擎操作手册与按需启用指南
 ├── wallpapers/                        # 桌面壁纸资源目录（仓库自包含，随构建打包进系统）
 ├── dotfiles/                          # 用户级应用核心配置 (fastfetch, alacritty, mpv)
 ├── hosts/
@@ -58,9 +60,9 @@
 │   ├── power.nix                      # 通用电源监控 (UPower)、logind 电源事件、TLP 节能策略与外设防休眠
 │   ├── desktop-dwm.nix                # DWM 窗口管理器、读取 host DPI（默认 96）、壁纸、picom、slock
 │   ├── fonts-ime.nix                  # 中日韩全套字体（Noto CJK）、Fontconfig 回退优先级（免打字输入法）
-│   ├── services.nix                   # NetworkManager、蓝牙、PipeWire 音频、PCManFM、Zathura、Clash Verge
-│   ├── appearance.nix                 # macOS 样式光标主题 (apple-cursor)、X11/XRDB 与 GTK3/4 样式统一
-│   └── virtualisation.nix             # KVM、Libvirt、Virt-Manager、Windows VirtIO 驱动与 Docker 容器引擎
+│   ├── services.nix                   # NetworkManager、蓝牙、PipeWire 音频、PCManFM、MPV、Clash Verge 等应用
+│   ├── appearance.nix                 # 原生低延迟 Adwaita 光标主题、X11/XRDB 与 GTK3/4 样式统一
+│   └── virtualisation.nix             # KVM、Libvirt、Virt-Manager 与 Windows VirtIO 驱动支持
 └── pkgs/                              # 本地自定义包与源码配置树
     ├── dwm/config.h                   # DWM 核心按键绑定与工作区 (1~6)
     ├── dmenu/config.h                 # dmenu 配色与字体
@@ -77,7 +79,7 @@
 | **开机引导项保留代数** | `modules/base.nix` | 顶部 `let bootLimit = 3;` |
 | **用户与 sudo 权限 / 用户组** | `modules/base.nix` | §5. 用户与权限 (`users.users.flynn`) |
 | **系统预装 CLI 工具 / 开发包** | `modules/base.nix` | §6. 基础系统工具 (`systemPackages`) |
-| **图形文件管理 / PDF / 日常软件** | `modules/services.nix` | §6. PCManFM、Zathura、MPV 等日常应用 |
+| **图形文件管理 / 影音 / 日常软件** | `modules/services.nix` | §6. PCManFM、MPV、AyuGram 等日常应用，全量清单见 [docs/APP.md](docs/APP.md) |
 | **键盘映射布局 (标准美式 US)** | `modules/input.nix` | §1. 键盘布局 (`xkb.layout`) |
 | **圆形滚动灵敏度 / 触发方式** | `hosts/sv8/sv8.nix` | §4. 圆盘触摸板 (`CircScrollDelta = "0.2"`) [这条属于 sv8.nix] |
 | **屏幕缩放比例 (全局 DPI)** | `hosts/sv8/sv8.nix` | §3. 显示设置 (`services.xserver.dpi = 144`) [这条属于 sv8.nix] |
@@ -85,7 +87,7 @@
 | **状态栏电池节点名称** | `hosts/sv8/sv8.nix` | §6. 电池节点名称 (`my.batteryName = "BAT1"`) [这条属于 sv8.nix] |
 | **内置光驱与 DVD 刻录** | `hosts/sv8/sv8.nix` | §7. 内置光驱与免提权刻录工具集 (`dvdplusrwtools` / `xorriso`)，指南见 [docs/DVD-BURNING.md](docs/DVD-BURNING.md) [这条属于 sv8.nix] |
 | **KVM / Windows 虚拟机配置** | `modules/virtualisation.nix` | §1~§5 QEMU/KVM、Virt-Manager、VirtIO 驱动，指南见 [docs/VIRTUALIZATION.md](docs/VIRTUALIZATION.md) |
-| **Docker 容器引擎与编排** | `modules/virtualisation.nix` | §2 Docker 服务、autoPrune 定期清理与 docker-compose，指南见 [docs/DOCKER.md](docs/DOCKER.md) |
+| **Docker 容器引擎与编排** | `modules/virtualisation.nix` | 默认已精简常驻守护以省资源，按需启用与指南见 [docs/DOCKER.md](docs/DOCKER.md) |
 | **合盖睡眠与电源键行为** | `modules/power.nix` | §1. 睡眠模式与合盖锁屏 (`services.logind`) |
 | **USB 供电与外设防休眠** | `modules/power.nix` | §3. 2.4G 鼠标接收器靶向保活与自动节能 |
 | **鼠标指针主题与尺寸** | `modules/appearance.nix` | §1~§3 (`cursorTheme = "Adwaita"`, `cursorSize = 24`) |

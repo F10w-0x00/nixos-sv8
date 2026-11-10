@@ -33,8 +33,6 @@
 
   services.udisks2.enable = true; # 存储设备管理守护进程
 
-  programs.firefox.enable = true;
-
   # 统一默认浏览器关联至 Google Chrome，PDF 阅读同样交由 Chrome 接管
   xdg.mime.defaultApplications = {
     "text/html" = "google-chrome.desktop";
