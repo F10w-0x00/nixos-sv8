@@ -131,3 +131,49 @@ description: Panasonic Let's Note CF-SV8 NixOS + DWM 桌面核心快捷键、触
 | `鼠标中键单击` | 极速粘贴选区 | 瞬间将 PRIMARY 选区文本粘贴至光标所在位置 |
 | `Shift + PageUp` / `PageDown` | 终端历史回滚浏览 | 快速查看历史命令输出上下文 |
 | `Ctrl + Shift + +` / `-` | 动态增大 / 缩小终端字体 | 临时放大查看紧凑代码或日志，按 `Ctrl + 0` 恢复默认 13pt |
+
+---
+
+## 六、 网络与蓝牙无线连接管理 (WiFi & Bluetooth)
+
+系统搭载 Intel Wireless-AC 9560 双频 WiFi 与蓝牙 5.0 硬件，均已原生免驱托管。
+
+### 1. WiFi 无线网络连接 (`nmtui` / `nmcli`)
+- **TUI 界面图形连接（推荐）**：
+  在终端中输入 `nmtui`，选择 **“激活连接 (Activate a connection)”**，方向键选择要连接的 WiFi 并输入密码回车即可。
+- **CLI 命令行极速直连**：
+  ```bash
+  nmcli dev wifi connect "WiFi名称" password "WiFi密码"
+  ```
+- **查看当前网络连接状态**：
+  ```bash
+  nmcli connection show --active
+  ```
+
+### 2. 蓝牙设备配对与连接 (`bluetoothctl`)
+蓝牙服务与适配器供电开机默认启动，原生支持 PipeWire 无损音频（SBC / AAC / aptX / LDAC 等）。
+
+#### A. 首次配对连接（只需一次）
+打开终端运行 `bluetoothctl` 进入交互模式：
+```text
+power on                 # 确保蓝牙供电开启
+scan on                  # 开启扫描周围蓝牙设备（此时耳机/手柄长按进入配对状态）
+```
+终端打印出设备名称与 MAC 地址后：
+```text
+pair XX:XX:XX:XX:XX:XX      # 1. 执行配对
+trust XX:XX:XX:XX:XX:XX     # 2. 设为信任（关键！开启后设备开机/开盖自动秒级回连，无需重复配对）
+connect XX:XX:XX:XX:XX:XX   # 3. 立即连接
+scan off                    # 关闭扫描以节省笔记本电量
+exit                        # 退出交互模式
+```
+
+#### B. 日常极速回连与管理（单行命令）
+在终端中无需进入交互模式，单行即可秒级操作（支持按 <kbd>Tab</kbd> 自动补全设备名）：
+| 操作需求 | 执行命令 | 说明 |
+| :--- | :--- | :--- |
+| **手动重连设备** | `bluetoothctl connect <MAC>` | 唤醒并秒连已信任设备 |
+| **断开当前连接** | `bluetoothctl disconnect [MAC]` | 断开当前或指定设备的蓝牙连接 |
+| **查看已配对设备** | `bluetoothctl devices` | 列出本机所有已信任/配对的设备及 MAC 地址 |
+| **查看连接详情与电量** | `bluetoothctl info` | 查看当前连接设备的电量百分比、蓝牙音频编码器与信号质量 |
+| **移除/取消配对** | `bluetoothctl remove <MAC>` | 从系统配对记录中彻底删除该设备 |
