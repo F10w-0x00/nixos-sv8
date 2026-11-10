@@ -78,6 +78,7 @@
 
   # ── 6. 日常桌面套件 ──────────────────────────
   environment.systemPackages = with pkgs; [
+    bluetuith # 极简终端 TUI 蓝牙管理器（操作手感对齐 nmtui）
     pcmanfm # 轻量图形文件管理器
     newsflash # RSS 阅读器
     mpv # 轻量多媒体播放器
