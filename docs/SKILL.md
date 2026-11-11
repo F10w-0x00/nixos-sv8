@@ -19,7 +19,7 @@ description: Panasonic Let's Note CF-SV8 NixOS + DWM 桌面核心快捷键、触
 | :--- | :--- | :--- |
 | `Super + Shift + Return` | 启动极速终端 | 打开 Alacritty 终端（无边框，已配置 12px 舒适边距与 Catppuccin 主题） |
 | `Super + p` | 打开应用启动器 | 呼出顶部 `dmenu` 启动条，输入应用名首字母按回车启动 |
-| `Super + s` | 竞速计时器 / 倒计时菜单 | 呼出 `dmenu` 极简双语选单：开启正向跑表、1h/2h/4h 深度工作倒计时或输入自定义时长 |
+| `Super + s` | 竞速计时器 / 倒计时菜单 | 呼出 `dmenu` 极简单行选单（Speedrun / Timer 1h / 2h / 4h / Pause / Reset），无括号免右键翻页 |
 | `Super + Shift + s` | 计时器暂停 / 继续 | 盲打一键暂停或继续当前 Speedrun 跑表与倒计时，状态栏实时更新为 `[󰏤]` / `[󱎫]` |
 | `Super + Shift + l` | 极简安全锁屏 | 调用 `slock` 立即黑屏锁定系统；盲打当前用户登录密码按回车解锁 |
 | `Super + Shift + c` | 关闭当前窗口 | 安全销毁当前获得焦点的窗口客户端（Kill Client） |
@@ -104,7 +104,7 @@ description: Panasonic Let's Note CF-SV8 NixOS + DWM 桌面核心快捷键、触
 顶部状态栏右侧常驻有 `00:00:00` 极简计时器，支持正向竞速跑表、番茄钟倒计时与桌面通知提醒。
 
 ### 1. 快捷键与 dmenu 菜单
-- 按下 <kbd>Super + s</kbd>：唤起 dmenu 计时选单，提供 `Timer 1h`、`Timer 2h`、`Timer 4h`、`Speedrun` 等常用预设，也可直接键盘输入任意时长（如敲 `45m` 或 `10` 回车开启倒计时）。
+- 按下 <kbd>Super + s</kbd>：唤起 dmenu 极简单行选单（`Speedrun`、`Timer 1h`、`Timer 2h`、`Timer 4h`、`Pause`、`Reset`），无任何括号，顶栏单行一览无余，无需按右键翻页。也可直接键盘输入任意时长（如敲 `45m` 或 `10` 回车开启倒计时）。
 - 按下 <kbd>Super + Shift + s</kbd>：全局盲打切换暂停与继续。
 
 ### 2. 命令行快捷指令 (`timer` / `speedrun-timer`)

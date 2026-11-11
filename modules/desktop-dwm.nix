@@ -272,15 +272,15 @@ EOF
 
   # Speedrun 计时器 dmenu 快速交互菜单
   speedrunTimerMenu = pkgs.writeShellScriptBin "speedrun-timer-menu" ''
-    CHOICE=$(printf "▶ Speedrun (开启正向竞速跑表)\n⏱ Timer 1h (倒计时 1 小时)\n⏱ Timer 2h (倒计时 2 小时)\n⏱ Timer 4h (倒计时 4 小时)\n⏸ Toggle (暂停 / 继续计时)\n⏹ Reset  (停止重置为 00:00:00)" | ${customDmenu}/bin/dmenu -i -p "Timer: ")
+    CHOICE=$(printf "▶ Speedrun\n⏱ Timer 1h\n⏱ Timer 2h\n⏱ Timer 4h\n⏸ Pause\n⏹ Reset" | ${customDmenu}/bin/dmenu -i -p "Timer: ")
 
     case "''$CHOICE" in
-      *"Speedrun"*)        ${speedrunTimerScript}/bin/speedrun-timer run ;;
-      *"1h"*|*"1 小时"*)    ${speedrunTimerScript}/bin/speedrun-timer 1h ;;
-      *"2h"*|*"2 小时"*)    ${speedrunTimerScript}/bin/speedrun-timer 2h ;;
-      *"4h"*|*"4 小时"*)    ${speedrunTimerScript}/bin/speedrun-timer 4h ;;
-      *"Toggle"*|*"暂停"*) ${speedrunTimerScript}/bin/speedrun-timer toggle ;;
-      *"Reset"*|*"停止"*)  ${speedrunTimerScript}/bin/speedrun-timer stop ;;
+      *"Speedrun"*)         ${speedrunTimerScript}/bin/speedrun-timer run ;;
+      *"1h"*)               ${speedrunTimerScript}/bin/speedrun-timer 1h ;;
+      *"2h"*)               ${speedrunTimerScript}/bin/speedrun-timer 2h ;;
+      *"4h"*)               ${speedrunTimerScript}/bin/speedrun-timer 4h ;;
+      *"Pause"*|*"Toggle"*) ${speedrunTimerScript}/bin/speedrun-timer toggle ;;
+      *"Reset"*|*"Stop"*)   ${speedrunTimerScript}/bin/speedrun-timer stop ;;
       *)
         if [ -n "''$CHOICE" ]; then
           ${speedrunTimerScript}/bin/speedrun-timer "''$CHOICE"
