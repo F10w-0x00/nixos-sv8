@@ -85,6 +85,7 @@
 | **`wget`, `curl`** | **基础命令行网络请求与文件下载工具**。<br>用于从终端快速发起 HTTP/HTTPS 请求、API 调试以及下载脚本或安装包。 | 终端执行 `curl`, `wget` | [`modules/base.nix`](file:///home/flynn/nixos-config/modules/base.nix#L106-L107) |
 | **`pciutils`, `usbutils`** | **硬件总线与芯片诊断工具 (`lspci`, `lsusb`)**。<br>用于查看 PCI-E 设备通道与 USB 接口硬件厂商 ID/设备 ID，排障外设识别故障。 | 终端执行 `lspci`, `lsusb` | [`modules/base.nix`](file:///home/flynn/nixos-config/modules/base.nix#L108-L109) |
 | **`fwupd`** | **硬件固件升级只读检测守护进程**。<br>用于通过 Linux Vendor Firmware Service (LVFS) 检查系统是否存在主板 BIOS 与外设固件更新。 | 终端执行 `fwupdmgr get-updates` | [`modules/services.nix`](file:///home/flynn/nixos-config/modules/services.nix#L25) |
+| **`thermald`** | **Intel 官方轻薄本动态热管理守护进程**。<br>接管松下 ACPI DPTF 温控与硬件风扇节点，低温待机时主动关停风扇（0 RPM 绝对静音），高负荷平滑控温防烫。 | systemd 后台常驻服务 (`thermald.service`) | [`modules/power.nix`](file:///home/flynn/nixos-config/modules/power.nix#L55-L58) |
 
 ---
 

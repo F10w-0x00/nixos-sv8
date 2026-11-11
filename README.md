@@ -75,7 +75,7 @@
 
 | 想修改的内容 | 对应文件路径 | 所在小节或参数 |
 | :--- | :--- | :--- |
-| **电源能效与 EPP 调频策略** | `modules/power.nix` | §2. TLP 设置 (`eppOnAc` / `eppOnBat`) |
+| **电源能效与动态温控 (thermald)** | `modules/power.nix` | §2~§3. TLP 节能偏置 (`balance_power`) 与 thermald 智能静音温控 |
 | **开机引导项保留代数** | `modules/base.nix` | 顶部 `let bootLimit = 3;` |
 | **用户与 sudo 权限 / 用户组** | `modules/base.nix` | §5. 用户与权限 (`users.users.flynn`) |
 | **系统预装 CLI 工具 / 开发包** | `modules/base.nix` | §6. 基础系统工具 (`systemPackages`) |
