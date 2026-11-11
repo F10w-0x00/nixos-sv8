@@ -272,7 +272,7 @@ EOF
 
   # Speedrun 计时器 dmenu 快速交互菜单
   speedrunTimerMenu = pkgs.writeShellScriptBin "speedrun-timer-menu" ''
-    CHOICE=$(printf "▶ Speedrun\n⏱ Timer 1h\n⏱ Timer 2h\n⏱ Timer 4h\n⏸ Pause\n⏹ Reset" | ${customDmenu}/bin/dmenu -i -p "Timer: ")
+    CHOICE=$(printf "󰐊 Speedrun\n󰔛 Timer 1h\n󰔛 Timer 2h\n󰔛 Timer 4h\n󰏤 Pause\n󰦛 Reset" | ${customDmenu}/bin/dmenu -i -p "Timer: ")
 
     case "''$CHOICE" in
       *"Speedrun"*)         ${speedrunTimerScript}/bin/speedrun-timer run ;;
