@@ -117,6 +117,8 @@ in
     cargo  #Rust
     rustc
     python3  #Python
+    uv  #Python 现代包与虚拟环境管理
+    ruff  #Python 极速 linter 与代码格式化
     alacritty
     neovim
     vscode
