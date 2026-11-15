@@ -18,7 +18,7 @@
   # [SV8] 编译并加载 acpi_call 内核模块，接管松下独有 EC 嵌入式控制器温控通道
   boot.extraModulePackages = [ config.boot.kernelPackages.acpi_call ];
 
-  # [SV8] 开机时向 EC 写入 SEFM(1)，切换至松下原厂静音曲线（待机低温 0 RPM 彻底静音，消除微弱蜂鸣声）
+  # [SV8] 开机时向 EC 写入原厂静音曲线，消除待机蜂鸣声并放行待机 0 RPM 完全停转
   systemd.services.panasonic-fan-quiet = {
     description = "Panasonic Let's Note EC Silent Fan Profile";
     wantedBy = [ "multi-user.target" ];
@@ -26,8 +26,11 @@
     serviceConfig = {
       Type = "oneshot";
       ExecStart = pkgs.writeShellScript "panasonic-fan-quiet" ''
+        ${pkgs.kmod}/bin/modprobe acpi_call 2>/dev/null || true
         if [ -e /proc/acpi/call ]; then
-          echo '\_SB.PCI0.LPCB.EC0.SEFM 1' > /proc/acpi/call
+          # 写入松下原厂 Eco/Silent 静音温控曲线 (0x79 -> 0x02) 并放行低温 0 RPM 停转 (0x77 -> 0x00)
+          echo '\_SB.PCI0.LPCB.EC0.EC88 0xB5 0x79 0x02 0x00' > /proc/acpi/call
+          echo '\_SB.PCI0.LPCB.EC0.EC88 0xB5 0x77 0x00 0x00' > /proc/acpi/call
         fi
       '';
       RemainAfterExit = true;
@@ -37,7 +40,8 @@
   # [SV8] 睡眠唤醒后自动重新下发 EC 原生静音曲线，防止固件唤醒重置为性能保底高转速
   powerManagement.resumeCommands = ''
     if [ -e /proc/acpi/call ]; then
-      echo '\_SB.PCI0.LPCB.EC0.SEFM 1' > /proc/acpi/call
+      echo '\_SB.PCI0.LPCB.EC0.EC88 0xB5 0x79 0x02 0x00' > /proc/acpi/call
+      echo '\_SB.PCI0.LPCB.EC0.EC88 0xB5 0x77 0x00 0x00' > /proc/acpi/call
     fi
   '';
 
