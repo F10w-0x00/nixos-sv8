@@ -67,7 +67,7 @@
 | **`vscode`** | **Visual Studio Code 全功能图形 IDE**。<br>具备极其丰富的扩展插件生态、图形化断点调试、Git 交互式合并审查与大型项目工程化开发。 | `Super + p` 输入 `code` | [`modules/base.nix`](file:///home/flynn/nixos-config/modules/base.nix#L122) |
 | **`gcc`, `gdb`, `gnumake`, `cmake`** | **C/C++ 语言工具链与构建套件**。<br>负责 C/C++ 程序的编译链接、单步断点调试、Makefile 工程与 CMake 现代化构建（同时服务于本地源码定制编译）。 | 终端执行 `gcc`, `gdb`, `make`, `cmake` | [`modules/base.nix`](file:///home/flynn/nixos-config/modules/base.nix#L113-L116) |
 | **`cargo`, `rustc`** | **Rust 现代系统级编程语言编译器与包管理器**。<br>负责 Rust 语言工程的构建编译、依赖解析、单元测试与发布打包。 | 终端执行 `cargo`, `rustc` | [`modules/base.nix`](file:///home/flynn/nixos-config/modules/base.nix#L117-L118) |
-| **`python3`** | **Python 3 运行时解释器**。<br>用于自动化脚本编写、日常运维任务、数据处理与基础开发。 | 终端执行 `python3` | [`modules/base.nix`](file:///home/flynn/nixos-config/modules/base.nix#L119) |
+| **`python3`** | **Python 3 运行时解释器与现代工程化工作流**。<br>配合 `uv`、`direnv` 与场景 Flake 构建纯净高效的 Python 三层开发环境。 | 终端执行 `python3`<br>完整实战手册：[`docs/PYTHON.md`](file:///home/flynn/nixos-config/docs/PYTHON.md) | [`modules/base.nix`](file:///home/flynn/nixos-config/modules/base.nix#L119) |
 | **`git`** | **分布式版本控制系统**。<br>管理本项目（`nixos-config`）以及日常软件工程的全部版本提交、分支归档与远程同步。 | 终端执行 `git` | [`modules/base.nix`](file:///home/flynn/nixos-config/modules/base.nix#L95) |
 | **`direnv` (`nix-direnv`)** | **目录级自动化开发环境加载器**。<br>进入包含 `.envrc` 的项目目录时，自动拉取并激活对应的 `nix-shell` 或 `flake` 开发环境，离开目录自动还原。 | 终端切换目录时自动触发 | [`modules/base.nix`](file:///home/flynn/nixos-config/modules/base.nix#L98-L101) |
 | **`nix-ld`** | **非 Nix 预编译二进制文件通用动态链接器**。<br>突破 NixOS 缺少标准 `/lib64/ld-linux-x86-64.so.2` 的限制，让网络下载的标准 Linux 二进制程序直接开箱运行。 | 系统级内核拦截，静默透明生效 | [`modules/base.nix`](file:///home/flynn/nixos-config/modules/base.nix#L82-L90) |
