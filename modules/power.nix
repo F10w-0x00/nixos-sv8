@@ -1,6 +1,6 @@
 # modules/power.nix — 通用电源管理、动态温控与能效调度
 # 包含：UPower 监控、logind 电源事件响应、thermald 动态温控与 TLP 软硬件级节能策略
-{ ... }:
+{ pkgs, ... }:
 
 let
   # ── EPP 能效与调频策略 ────────────────────────
@@ -54,8 +54,11 @@ in
 
   # ── 3. Intel 动态热管理守护进程 (thermald) ───────────
   # 专为第 8 代酷睿轻薄本设计，接管 ACPI DPTF 温控与硬件风扇控制节点
-  # 在待机低温（<45°C）状态下主动将风扇维持在 state0 (0 RPM 完全停转)，实现彻底绝对静音
-  services.thermald.enable = true;
+  # 显式指定标准配置文件，避免 --adaptive 因松下固件缺失阈值而异常退出，维持常驻温控守护
+  services.thermald = {
+    enable = true;
+    configFile = "${pkgs.thermald}/etc/thermald/thermal-conf.xml";
+  };
 
   # ── 4. Udev 精准靶向供电规则 ────────────────
   # 仅针对 2.4G 鼠标无线接收器（3151:3020）保持活跃供电，放行主控制器与内置外设休眠

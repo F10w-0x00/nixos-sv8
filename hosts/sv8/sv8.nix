@@ -1,6 +1,7 @@
 # hosts/sv8/sv8.nix — Panasonic Let's Note CF-SV8 本机特有硬件配置
 # 本文件是唯一的本机特有配置；换一台电脑本文件中所有设置均失效、有害或无意义
 {
+  config,
   pkgs,
   ...
 }:
@@ -8,7 +9,37 @@
 {
   # ── 1. 松下专有平台驱动与按键 ─────────────────
   # [SV8] 松下独占 WMI/ACPI 平台驱动，绑定机身特有热键（Fn 亮度/音量）、硬件接口；换其他品牌机器加载无意义
-  boot.kernelModules = [ "panasonic_laptop" ];
+  boot.kernelModules = [
+    "panasonic_laptop"
+    "acpi_call"
+  ];
+
+  # ── 2. 松下 EC 原生静音温控 (acpi_call) ─────────
+  # [SV8] 编译并加载 acpi_call 内核模块，接管松下独有 EC 嵌入式控制器温控通道
+  boot.extraModulePackages = [ config.boot.kernelPackages.acpi_call ];
+
+  # [SV8] 开机时向 EC 写入 SEFM(1)，切换至松下原厂静音曲线（待机低温 0 RPM 彻底静音，消除微弱蜂鸣声）
+  systemd.services.panasonic-fan-quiet = {
+    description = "Panasonic Let's Note EC Silent Fan Profile";
+    wantedBy = [ "multi-user.target" ];
+    after = [ "systemd-modules-load.service" ];
+    serviceConfig = {
+      Type = "oneshot";
+      ExecStart = pkgs.writeShellScript "panasonic-fan-quiet" ''
+        if [ -e /proc/acpi/call ]; then
+          echo '\_SB.PCI0.LPCB.EC0.SEFM 1' > /proc/acpi/call
+        fi
+      '';
+      RemainAfterExit = true;
+    };
+  };
+
+  # [SV8] 睡眠唤醒后自动重新下发 EC 原生静音曲线，防止固件唤醒重置为性能保底高转速
+  powerManagement.resumeCommands = ''
+    if [ -e /proc/acpi/call ]; then
+      echo '\_SB.PCI0.LPCB.EC0.SEFM 1' > /proc/acpi/call
+    fi
+  '';
 
   # ── 3. 显示与 Intel 核显 ──────────────────────
   # [SV8] Intel Whiskey Lake Gen9 UHD 620 核显 VA-API 硬件解码器；AMD/Nvidia 机器不适用
